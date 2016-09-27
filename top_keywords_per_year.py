@@ -4,16 +4,22 @@ import time, datetime
 from pprint import pprint
 import json
 
-records = Medline.parse( open('pubmed_result_syphilis.medline') )
+uninteresting_terms = ['Humans', 'Male', 'Female', '1','2','3','4','5','6','7','8','9']
 
+def flatten_MH(MH):
+    mh = []
+    for term in MH:
+        words = term.split('/')
+        for w in words:
+            if w not in uninteresting_terms:
+                mh.append(w.replace('*',''))
+    return mh
+
+records = Medline.parse( open('pubmed_result_syphilis.medline') )
 terms = {n:{'kw':[], 'publications':0} for n in range(1817,2017)}
 
 for r in records:
 
-    if not 'EDAT' in r.keys():
-        print r
-        break
-        
     # evenly format dates
     if 'EDAT' in r.keys():
         try:
@@ -24,27 +30,39 @@ for r in records:
             date = datetime.datetime(*conv[:6]) # entrez date
 
         terms[date.year]['publications']+=1
-        
+
         if 'MH' in r:
-            d = Document(r['MH'])
+            d = Document(flatten_MH(r['MH']))
             terms[date.year]['kw']+=[w[1] for w in d.keywords()]
 
         if 'OT' in r:
-            d = Document(r['OT'])
+            d = Document(flatten_MH(r['OT']))
             terms[date.year]['kw']+=[w[1] for w in d.keywords()]
 
-        if len(terms[date.year]['kw']) == 0 and 'TI' in r:
-            d = Document(r['TI'])
-            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
-        elif 'AB' in r:
-            d = Document(r['AB'])
-            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
+        # no MH or OT? 
+        if 'OT' not in r and 'MH' not in r:
+            # grab terms from title or abstract
+            d = Document(r.get('TI',r.get('AB')))
+            kw = []
+            for w in d.keywords():
+                try:
+                    # numbers are uninteresting
+                    int(w[1])
+                except ValueError:
+                    kw.append(w[1])
+            terms[date.year]['kw']+= kw
 
 top_terms = {n:{'kw':[], 'publications':0} for n in range(1817,2017)}
 for year in terms:
-    d=Document(terms[year]['kw'])
-    top_terms[year]['kw'] = d.keywords(top=10)
     top_terms[year]['publications'] = terms[year]['publications']
+    if top_terms[year]['publications']/20 <= 10:
+        top = 10
+    else:
+        top = top_terms[year]['publications']/20 # top 5%
+        
+    d=Document(terms[year]['kw'])
+    top_terms[year]['kw'] = d.keywords(top=top)
+
 
 # kw = set()
 # for year in top_terms:
