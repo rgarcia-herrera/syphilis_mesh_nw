@@ -1,25 +1,19 @@
-import argparse
 from pattern.vector import Document
 from Bio import Medline
 import time, datetime
-from itertools import combinations
 from pprint import pprint
-import networkx as nx
-import sys
+import json
 
-parser = argparse.ArgumentParser(description='grab terms from medline')
-parser.add_argument('medline', type=argparse.FileType('r'), default=sys.stdin, help="citations file in medline format")
+records = Medline.parse( open('pubmed_result_syphilis.medline') )
 
-args    = parser.parse_args()
-
-records = Medline.parse( args.medline )
-
-g = nx.Graph()
-
-terms = {n:[] for n in range(1817,2017)}
+terms = {n:{'kw':[], 'publications':0} for n in range(1817,2017)}
 
 for r in records:
 
+    if not 'EDAT' in r.keys():
+        print r
+        break
+        
     # evenly format dates
     if 'EDAT' in r.keys():
         try:
@@ -29,19 +23,32 @@ for r in records:
             conv = time.strptime( r['EDAT'], "%Y/%m/%d" )
             date = datetime.datetime(*conv[:6]) # entrez date
 
+        terms[date.year]['publications']+=1
+        
         if 'MH' in r:
-            pass
-        elif 'OT' in r:
-            pass
-        elif 'TI' in r:
+            d = Document(r['MH'])
+            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
+
+        if 'OT' in r:
+            d = Document(r['OT'])
+            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
+
+        if len(terms[date.year]['kw']) == 0 and 'TI' in r:
             d = Document(r['TI'])
-            terms[date.year]+=[w[1] for w in d.keywords()]
-        else:
+            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
+        elif 'AB' in r:
             d = Document(r['AB'])
-            terms[date.year]+=[w[1] for w in d.keywords()]
+            terms[date.year]['kw']+=[w[1] for w in d.keywords()]
 
-
+top_terms = {n:{'kw':[], 'publications':0} for n in range(1817,2017)}
 for year in terms:
-    d=Document(terms[year])
-    print year,[w[1] for w in d.keywords(top=10)]
+    d=Document(terms[year]['kw'])
+    top_terms[year]['kw'] = d.keywords(top=10)
+    top_terms[year]['publications'] = terms[year]['publications']
 
+# kw = set()
+# for year in top_terms:
+#     for w in top_terms[year]:
+#         kw.add(w[1])
+
+#pprint(terms)
