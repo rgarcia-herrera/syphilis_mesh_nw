@@ -35,3 +35,6 @@ natural language processor.
 
 I've grouped these keywords per year, next I'll try to plot them!
 
+Use this to group similar keywords
+
+https://pypi.python.org/pypi/Distance/0.1.3
