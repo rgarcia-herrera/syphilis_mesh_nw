@@ -17,6 +17,7 @@ class Race:
         self.marshes.append((distance, width))
 
     def render(self):
+        control_distance = 0.5
         for n in range(0, len(self.marshes)-1):
             print n
             x1 = self.x - (self.marshes[n][1]/2.0)
@@ -26,16 +27,22 @@ class Race:
             y2 = self.marshes[n+1][0]
 
             c1x = x1
-            c1y = y1 + ((y2-y1)/3.0)            
+            c1y = y1 + ((y2-y1)*control_distance) 
 
             c2x = x2
-            c2y = y2 - ((y2-y1)/3.0)            
+            c2y = y2 - ((y2-y1)*control_distance) 
 
             x3 = self.x + (self.marshes[n+1][1]/2.0)
             y3 = self.marshes[n+1][0]
 
             x4 = self.x + (self.marshes[n][1]/2.0)
             y4 = self.marshes[n][0]
+
+            c3x = x3
+            c3y = y4 - ((y4-y3)*control_distance) 
+
+            c4x = x2
+            c4y = y2 - ((y2-y1)*control_distance) 
 
             p = self.dwg.path(d="M%d,%d Z" % (x1, y1),
                               fill=self.fill,
@@ -47,6 +54,16 @@ class Race:
             p.push("%d %d" % (c2x, c2y))
             p.push("%d %d" % (x2, y2))
 
+            # maybe move to x3, y3
+            p.push("M%d %d" % (x3, y3))
+
+            # connect x3,y3 to x4, y4
+            p.push("C %d %d" % (c3x, c3y))
+            p.push("%d %d" % (c4x, c4y))
+            p.push("%d %d" % (x4, y4))
+
+
+            
             self.dwg.add(p)
 
 
