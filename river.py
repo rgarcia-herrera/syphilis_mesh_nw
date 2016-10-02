@@ -46,8 +46,8 @@ class Race:
 
             p = self.dwg.path(d="M%d,%d Z" % (x1, y1),
                               fill=self.fill,
-                              stroke="red",
-                              stroke_width=2)
+                              stroke="white",
+                              stroke_width=0)
 
             # connect x1,y1 to x2, y2
             p.push("C %d %d" % (c1x, c1y))
@@ -86,10 +86,13 @@ class Race:
 # dwg.save()
 
 
-s = Race(fill='yellow')
+s = Race(fill='limegreen')
 
-s.add_marsh(distance=1, width=5)
-s.add_marsh(distance=50, width=60)
+s.add_marsh(distance=1, width=120)
+s.add_marsh(distance=30, width=90)
+s.add_marsh(distance=100, width=170)
+s.add_marsh(distance=150, width=188)
+s.add_marsh(distance=300, width=80)
 
 s.render()
 s.dwg.save()
