@@ -1,32 +1,12 @@
-# s = Race(color='yellow')
+import river
 
-# s.add_recess(distance=1817, width=50)
-# s.add_recess(distance=1842, width=200)
+s = river.Race(fill='limegreen')
+s.add_marsh(distance=1, width=120, offset=210)
+s.add_marsh(distance=130, width=90, offset=50)
+s.add_marsh(distance=177, width=170, offset=100, label='syphilis')
+s.add_marsh(distance=250, width=188, offset=70)
+s.add_marsh(distance=322, width=80, offset=120)
+s.add_marsh(distance=400, width=18, offset=200)
 
-
-# r = River()
-
-# r.add_race(s)
-# r.add_race(s)
-
-
-
-# for y in terms:
-#     if 'syphilis' in terms[y]:
-#         r=Recess()
-
-
-
-dwg = svgwrite.Drawing('aguas.svg')
-
-p = dwg.path(d="M10,10 Z",
-             fill="#00ff00",
-             stroke="red",
-             stroke_width=6)
-
-p.push("C 50 100")
-p.push("50 100")
-p.push("100 10")
-
-dwg.add(p)
-dwg.save()
+s.render()
+s.dwg.save()

@@ -7,36 +7,41 @@ class River:
 
 
 class Race:
-    def __init__(self, fill='grey', marshes=[]):
+    def __init__(self, fill='grey', marshes={}):
         self.dwg = svgwrite.Drawing(filename='prueba.svg')
         self.marshes = marshes
         self.x = 100
         self.fill = fill
 
-    def add_marsh(self, distance, width):
-        self.marshes.append((distance, width))
+    def add_marsh(self, distance, offset, width,  label=''):
+        self.marshes[distance] = {'label': label,
+                                  'w': width,
+                                  'x': offset}
 
     def render(self):
         control_distance = 0.5
-        for n in range(0, len(self.marshes)-1):
-            print n
-            x1 = self.x - (self.marshes[n][1]/2.0)
-            y1 = self.marshes[n][0]
+        marsh_distances = sorted(self.marshes.keys())
+        for n in range(0, len(marsh_distances)-1):
+            m1 = self.marshes[marsh_distances[n]]
+            m2 = self.marshes[marsh_distances[n+1]]
 
-            x2 = self.x - (self.marshes[n+1][1]/2.0)
-            y2 = self.marshes[n+1][0]
+            x1 = m1['x'] - (m1['w']/2.0)
+            y1 = marsh_distances[n]
+
+            x2 = m2['x'] - (m2['w']/2.0)
+            y2 = marsh_distances[n+1]
 
             c1x = x1
-            c1y = y1 + ((y2-y1)*control_distance) 
+            c1y = y1 + ((y2-y1)*control_distance)
 
             c2x = x2
-            c2y = y2 - ((y2-y1)*control_distance) 
+            c2y = y2 - ((y2-y1)*control_distance)
 
-            x3 = self.x + (self.marshes[n+1][1]/2.0)
-            y3 = self.marshes[n+1][0]
+            x3 = m2['x'] + (m2['w']/2.0)
+            y3 = marsh_distances[n+1]
 
-            x4 = self.x + (self.marshes[n][1]/2.0)
-            y4 = self.marshes[n][0]
+            x4 = m1['x'] + (m1['w']/2.0)
+            y4 = marsh_distances[n]
 
             c3x = x3
             c3y = y3 - ((y3-y4)*control_distance)
@@ -64,35 +69,11 @@ class Race:
 
             # line from x4, y4 to x1, y1
             p.push("L %d %d" % (x1, y1))
-            
-
-            
             self.dwg.add(p)
 
-
-
-# dwg = svgwrite.Drawing('aguas.svg')
-
-# p = dwg.path(d="M10,10 Z",
-#              fill="#00ff00",
-#              stroke="red",
-#              stroke_width=6)
-
-# p.push("C 30 10")
-# p.push("30 30")
-# p.push("0 50")
-
-# dwg.add(p)
-# dwg.save()
-
-
-s = Race(fill='limegreen')
-
-s.add_marsh(distance=1, width=120)
-s.add_marsh(distance=30, width=90)
-s.add_marsh(distance=100, width=170)
-s.add_marsh(distance=150, width=188)
-s.add_marsh(distance=300, width=80)
-
-s.render()
-s.dwg.save()
+            # place label
+            if m1['label'] != '':
+                l = self.dwg.text(m1['label'],
+                                  insert=(m1['x'], marsh_distances[n]),
+                                  style="font-size: 20")
+                self.dwg.add(l)
