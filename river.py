@@ -39,10 +39,10 @@ class Race:
             y4 = self.marshes[n][0]
 
             c3x = x3
-            c3y = y4 - ((y4-y3)*control_distance) 
+            c3y = y3 - ((y3-y4)*control_distance)
 
-            c4x = x2
-            c4y = y2 - ((y2-y1)*control_distance) 
+            c4x = x4
+            c4y = y4 + ((y2-y1)*control_distance)
 
             p = self.dwg.path(d="M%d,%d Z" % (x1, y1),
                               fill=self.fill,
@@ -54,14 +54,17 @@ class Race:
             p.push("%d %d" % (c2x, c2y))
             p.push("%d %d" % (x2, y2))
 
-            # maybe move to x3, y3
-            p.push("M%d %d" % (x3, y3))
+            # line to x3, y3
+            p.push("L %d %d" % (x3, y3))
 
             # connect x3,y3 to x4, y4
             p.push("C %d %d" % (c3x, c3y))
             p.push("%d %d" % (c4x, c4y))
             p.push("%d %d" % (x4, y4))
 
+            # line from x4, y4 to x1, y1
+            p.push("L %d %d" % (x1, y1))
+            
 
             
             self.dwg.add(p)
@@ -85,8 +88,8 @@ class Race:
 
 s = Race(fill='yellow')
 
-s.add_marsh(distance=1, width=20)
-s.add_marsh(distance=100, width=80)
+s.add_marsh(distance=1, width=5)
+s.add_marsh(distance=50, width=60)
 
 s.render()
 s.dwg.save()
