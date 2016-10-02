@@ -75,5 +75,18 @@ class Race:
             if m1['label'] != '':
                 l = self.dwg.text(m1['label'],
                                   insert=(m1['x'], marsh_distances[n]),
-                                  style="font-size: 20")
+                                  style="font-size: 12; text-anchor:middle")
                 self.dwg.add(l)
+
+
+
+s = Race(fill='limegreen')
+s.add_marsh(distance=1, width=120, offset=210)
+s.add_marsh(distance=130, width=90, offset=150)
+s.add_marsh(distance=177, width=170, offset=100, label='syphilis')
+s.add_marsh(distance=250, width=188, offset=70)
+s.add_marsh(distance=322, width=80, offset=120, label='1910')
+s.add_marsh(distance=400, width=18, offset=200)
+
+s.render()
+s.dwg.save()
