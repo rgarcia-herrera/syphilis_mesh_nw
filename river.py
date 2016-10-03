@@ -8,15 +8,26 @@ class River:
 
 class Race:
     def __init__(self, fill='grey', marshes={}):
-        self.dwg = svgwrite.Drawing(filename='prueba.svg')
+        self.dwg = svgwrite.Drawing()
         self.marshes = marshes
-        self.x = 100
         self.fill = fill
 
     def add_marsh(self, distance, offset, width,  label=''):
         self.marshes[distance] = {'label': label,
                                   'w': width,
                                   'x': offset}
+
+    def center_stream(self, x):
+        for distance in self.marshes:
+            self.marshes[distance]['x'] = x
+
+    def flank(self, race, side="right"):
+        for distance in self.marshes:
+            race.marshes[distance]['x'] = self.marshes[distance]['x'] + \
+                                          (self.marshes[distance]['w'] / 2.0) + \
+                                          (race.marshes[distance]['w'] / 2.0)
+            
+        
 
     def render(self):
         control_distance = 0.5
@@ -79,14 +90,31 @@ class Race:
                 self.dwg.add(l)
 
 
+r = River(filename='prueba.svg')
 
 s = Race(fill='limegreen')
-s.add_marsh(distance=1, width=120, offset=210)
-s.add_marsh(distance=130, width=90, offset=150)
-s.add_marsh(distance=177, width=170, offset=100, label='syphilis')
-s.add_marsh(distance=250, width=188, offset=70)
-s.add_marsh(distance=322, width=80, offset=120, label='1910')
+s.add_marsh(distance=1, width=120, offset=200)
+s.add_marsh(distance=130, width=90, offset=200)
+s.add_marsh(distance=177, width=170, offset=200, label='syphilis')
+s.add_marsh(distance=250, width=188, offset=200)
+s.add_marsh(distance=322, width=80, offset=200, label='1910')
 s.add_marsh(distance=400, width=18, offset=200)
-
 s.render()
-s.dwg.save()
+
+m = Race(fill='darkgreen')
+m.add_marsh(distance=1, width=120, offset=400)
+m.add_marsh(distance=130, width=90, offset=400)
+m.add_marsh(distance=177, width=170, offset=400, label='mercury')
+m.add_marsh(distance=250, width=188, offset=400)
+m.add_marsh(distance=322, width=80, offset=400, label='1910')
+m.add_marsh(distance=400, width=18, offset=400)
+
+s.flank(m)
+
+m.render()
+
+
+r.dwg.add(s.dwg)
+r.dwg.add(m.dwg)
+
+r.dwg.save()
