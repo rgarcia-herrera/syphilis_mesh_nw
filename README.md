@@ -35,6 +35,9 @@ natural language processor.
 
 I've grouped these keywords per year, next I'll try to plot them!
 
-Use this to group similar keywords
+I have some progress into a RiverPlot library. So far I can define
+races that run down, and I can make them flank each other on the
+right. It looks great!
 
-https://pypi.python.org/pypi/Distance/0.1.3
+<img src="river.png">
+
