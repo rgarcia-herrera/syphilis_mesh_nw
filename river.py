@@ -1,35 +1,30 @@
 import svgwrite
-
+from pprint import pprint
+from random import randrange
 
 class River:
     def __init__(self, filename):
-        self.dwg = svgwrite.Drawing(filename=filename)
+        pass
 
 
 class Race:
-    def __init__(self, fill='grey', marshes={}):
-        self.dwg = svgwrite.Drawing()
-        self.marshes = marshes
+    def __init__(self, dwg, fill='grey'):
+        self.marshes = {}
         self.fill = fill
+        self.paths = []
+        self.dwg = dwg
 
-    def add_marsh(self, distance, offset, width,  label=''):
+    def add_marsh(self, distance, x=0, width=0,  label=''):
         self.marshes[distance] = {'label': label,
                                   'w': width,
-                                  'x': offset}
+                                  'x': x}
 
     def center_stream(self, x):
         for distance in self.marshes:
             self.marshes[distance]['x'] = x
 
-    def flank(self, race, side="right"):
-        for distance in self.marshes:
-            race.marshes[distance]['x'] = self.marshes[distance]['x'] + \
-                                          (self.marshes[distance]['w'] / 2.0) + \
-                                          (race.marshes[distance]['w'] / 2.0)
-            
-        
-
-    def render(self):
+    def update_paths(self):
+        self.paths = []
         control_distance = 0.5
         marsh_distances = sorted(self.marshes.keys())
         for n in range(0, len(marsh_distances)-1):
@@ -80,41 +75,79 @@ class Race:
 
             # line from x4, y4 to x1, y1
             p.push("L %d %d" % (x1, y1))
+
+            self.paths.append(p)
+
+    def render(self):
+        for p in self.paths:
             self.dwg.add(p)
 
-            # place label
-            if m1['label'] != '':
-                l = self.dwg.text(m1['label'],
-                                  insert=(m1['x'], marsh_distances[n]),
-                                  style="font-size: 12; text-anchor:middle")
-                self.dwg.add(l)
+
+            # # place label
+            # if m1['label'] != '':
+            #     l = dwg.text(m1['label'],
+            #                       insert=(m1['x'], marsh_distances[n]),
+            #                       style="font-size: 12; text-anchor:middle")
+            #     self.elements.append(p)
+
+    def flank(self, race):
+        for distance in self.marshes:
+            self.marshes[distance]['x'] = self.marshes[distance]['w'] * 0.5 + \
+                                          race.marshes[distance]['x'] + \
+                                          race.marshes[distance]['w'] * 0.5
+
+#r = River()
+dwg = svgwrite.Drawing(filename='prueba.svg')
+
+sif = Race(dwg, fill='greenyellow')
+sif.add_marsh(distance=1, width=randrange(50,110), x=randrange(100, 133))
+sif.add_marsh(distance=130, width=randrange(50,110), x=randrange(100, 133))
+sif.add_marsh(distance=177, width=randrange(50,110), x=randrange(100, 133))
+sif.add_marsh(distance=250, width=randrange(50,110), x=randrange(100, 133))
+sif.add_marsh(distance=322, width=randrange(50,110), x=randrange(100, 133))
+sif.add_marsh(distance=400, width=randrange(50,110), x=randrange(100, 133))
 
 
-r = River(filename='prueba.svg')
+m = Race(dwg, fill='darkorange')
+m.add_marsh(distance=1, width=randrange(40,70))
+m.add_marsh(distance=130, width=randrange(40,70))
+m.add_marsh(distance=177, width=randrange(40,70), label='mercury')
+m.add_marsh(distance=250, width=randrange(40,70))
+m.add_marsh(distance=322, width=randrange(40,70), label='1910')
+m.add_marsh(distance=400, width=randrange(40,70))
 
-s = Race(fill='limegreen')
-s.add_marsh(distance=1, width=120, offset=200)
-s.add_marsh(distance=130, width=90, offset=200)
-s.add_marsh(distance=177, width=170, offset=200, label='syphilis')
-s.add_marsh(distance=250, width=188, offset=200)
-s.add_marsh(distance=322, width=80, offset=200, label='1910')
-s.add_marsh(distance=400, width=18, offset=200)
-s.render()
+m.flank(sif)
 
-m = Race(fill='darkgreen')
-m.add_marsh(distance=1, width=120, offset=400)
-m.add_marsh(distance=130, width=90, offset=400)
-m.add_marsh(distance=177, width=170, offset=400, label='mercury')
-m.add_marsh(distance=250, width=188, offset=400)
-m.add_marsh(distance=322, width=80, offset=400, label='1910')
-m.add_marsh(distance=400, width=18, offset=400)
 
-s.flank(m)
+n = Race(dwg, fill='chocolate')
+n.add_marsh(distance=1, width=randrange(40,70))
+n.add_marsh(distance=130, width=randrange(40,70))
+n.add_marsh(distance=177, width=randrange(40,70), label='nitro')
+n.add_marsh(distance=250, width=randrange(100))
+n.add_marsh(distance=322, width=randrange(100))
+n.add_marsh(distance=400, width=randrange(100))
 
+n.flank(m)
+
+
+o = Race(dwg, fill='teal')
+o.add_marsh(distance=1, width=randrange(40,70))
+o.add_marsh(distance=130, width=randrange(40,70))
+o.add_marsh(distance=177, width=randrange(40,70), label='nitro')
+o.add_marsh(distance=250, width=randrange(100))
+o.add_marsh(distance=322, width=randrange(100))
+o.add_marsh(distance=400, width=randrange(100))
+
+o.flank(n)
+
+
+sif.update_paths()
+sif.render()
+m.update_paths()
 m.render()
+n.update_paths()
+n.render()
+o.update_paths()
+o.render()
 
-
-r.dwg.add(s.dwg)
-r.dwg.add(m.dwg)
-
-r.dwg.save()
+dwg.save()
