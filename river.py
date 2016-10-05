@@ -82,7 +82,6 @@ class Race:
         for p in self.paths:
             self.dwg.add(p)
 
-
             # # place label
             # if m1['label'] != '':
             #     l = dwg.text(m1['label'],
@@ -90,55 +89,60 @@ class Race:
             #                       style="font-size: 12; text-anchor:middle")
             #     self.elements.append(p)
 
-    def flank(self, race):
-        for distance in self.marshes:
-            self.marshes[distance]['x'] = self.marshes[distance]['w'] * 0.5 + \
-                                          race.marshes[distance]['x'] + \
-                                          race.marshes[distance]['w'] * 0.5
+    def flank(self, race, side):
+        if side == 'r':
+            sign = 1
+        elif side == 'l':
+            sign = -1
+            
+        for d in self.marshes:
+            self.marshes[d]['x'] = sign * self.marshes[d]['w'] * 0.5 + \
+                                   race.marshes[d]['x'] + \
+                                   sign * race.marshes[d]['w'] * 0.5
 
 #r = River()
 dwg = svgwrite.Drawing(filename='prueba.svg')
 
 sif = Race(dwg, fill='greenyellow')
-sif.add_marsh(distance=1, width=randrange(50,110), x=randrange(100, 133))
-sif.add_marsh(distance=130, width=randrange(50,110), x=randrange(100, 133))
-sif.add_marsh(distance=177, width=randrange(50,110), x=randrange(100, 133))
-sif.add_marsh(distance=250, width=randrange(50,110), x=randrange(100, 133))
-sif.add_marsh(distance=322, width=randrange(50,110), x=randrange(100, 133))
-sif.add_marsh(distance=400, width=randrange(50,110), x=randrange(100, 133))
-
+sif.add_marsh(distance=1, width=randrange(50, 110), x=randrange(250, 333))
+sif.add_marsh(distance=130, width=randrange(50, 110), x=randrange(100, 133))
+sif.add_marsh(distance=177, width=randrange(50, 110), x=randrange(100, 133))
+sif.add_marsh(distance=300, width=randrange(50, 210), x=randrange(10, 300))
+sif.add_marsh(distance=422, width=randrange(50, 140), x=randrange(100, 133))
+sif.add_marsh(distance=600, width=randrange(50, 310), x=randrange(150, 233))
+sif.center_stream(400)
 
 m = Race(dwg, fill='darkorange')
 m.add_marsh(distance=1, width=randrange(40,70))
 m.add_marsh(distance=130, width=randrange(40,70))
 m.add_marsh(distance=177, width=randrange(40,70), label='mercury')
-m.add_marsh(distance=250, width=randrange(40,70))
-m.add_marsh(distance=322, width=randrange(40,70), label='1910')
-m.add_marsh(distance=400, width=randrange(40,70))
+m.add_marsh(distance=300, width=randrange(40,70))
+m.add_marsh(distance=422, width=randrange(40,70), label='1910')
+m.add_marsh(distance=600, width=randrange(40,70))
 
-m.flank(sif)
+m.flank(sif, 'r')
 
 
 n = Race(dwg, fill='chocolate')
 n.add_marsh(distance=1, width=randrange(40,70))
 n.add_marsh(distance=130, width=randrange(40,70))
 n.add_marsh(distance=177, width=randrange(40,70), label='nitro')
-n.add_marsh(distance=250, width=randrange(100))
-n.add_marsh(distance=322, width=randrange(100))
-n.add_marsh(distance=400, width=randrange(100))
+n.add_marsh(distance=300, width=randrange(100))
+n.add_marsh(distance=422, width=randrange(100))
+n.add_marsh(distance=600, width=randrange(100))
 
-n.flank(m)
+n.flank(sif, 'l')
 
 
 o = Race(dwg, fill='teal')
 o.add_marsh(distance=1, width=randrange(40,70))
 o.add_marsh(distance=130, width=randrange(40,70))
 o.add_marsh(distance=177, width=randrange(40,70), label='nitro')
-o.add_marsh(distance=250, width=randrange(100))
-o.add_marsh(distance=322, width=randrange(100))
-o.add_marsh(distance=400, width=randrange(100))
+o.add_marsh(distance=300, width=randrange(100))
+o.add_marsh(distance=422, width=randrange(40))
+o.add_marsh(distance=600, width=randrange(100))
 
-o.flank(n)
+o.flank(n,'l')
 
 
 sif.update_paths()
