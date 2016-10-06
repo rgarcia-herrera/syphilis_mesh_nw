@@ -94,20 +94,34 @@ class Race:
             sign = 1
         elif side == 'l':
             sign = -1
-            
+
+        new_marshes = []
         for d in self.marshes:
             if d in race.marshes:
                 self.marshes[d]['x'] = sign * self.marshes[d]['w'] * 0.5 + \
                                        race.marshes[d]['x'] + \
                                        sign * race.marshes[d]['w'] * 0.5
             else:
-                (close, quite_close) = race.closest_marshes_to(d)
-                print close, quite_close
+                (closest, quite_close) = race.closest_marshes_to(d)
+                print closest, quite_close
+                # place our discording marsh at the offset of the closest 
                 self.marshes[d]['x'] = sign * self.marshes[d]['w'] * 0.5 + \
-                                       race.marshes[close]['x'] + \
-                                       sign * race.marshes[close]['w'] * 0.5
-                
+                                       race.marshes[closest]['x'] + \
+                                       sign * race.marshes[closest]['w'] * 0.5
+                # create a new marsh at the next to closest distance
+                w = self.average_width_at(quite_close)
+                new_marshes.append((quite_close,
+                                    race.marshes[quite_close]['x'] \
+                                    + race.marshes[quite_close]['w'] * 0.5 \
+                                    + w * 0.5,
+                                    w))
 
+        for new in new_marshes:
+            self.add_marsh(*new)
+                
+    def average_width_at(self, n):
+        return 30
+    
     def closest_marshes_to(self, distance):
         diff = {}
         for d in self.marshes:
@@ -127,7 +141,7 @@ sif.center_stream(400)
 m = Race(dwg, fill='darkorange')
 m.add_marsh(distance=1, width=randrange(40,70))
 m.add_marsh(distance=500, width=randrange(40,70))
-m.add_marsh(distance=600, width=randrange(40,70), label='mercury')
+m.add_marsh(distance=680, width=randrange(40,70), label='mercury')
 m.flank(sif, 'r')
 
 
