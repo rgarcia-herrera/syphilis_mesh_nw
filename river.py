@@ -103,7 +103,6 @@ class Race:
                                        sign * race.marshes[d]['w'] * 0.5
             else:
                 (closest, quite_close) = race.closest_marshes_to(d)
-                print closest, quite_close
                 # place our discording marsh at the offset of the closest 
                 self.marshes[d]['x'] = sign * self.marshes[d]['w'] * 0.5 + \
                                        race.marshes[closest]['x'] + \
@@ -119,7 +118,22 @@ class Race:
         for new in new_marshes:
             self.add_marsh(*new)
                 
-    def average_width_at(self, n):
+    def average_width_at(self, distance):
+        diff = {}
+        for d in self.marshes:
+            diff[abs(distance - d)] = d
+
+        closest = diff[sorted(diff.keys())[0]]
+
+        if distance < closest:
+            bottom = self.marshes.keys()[self.marshes.keys().index(closest)-1]
+            top = closest
+        else:
+            top = self.marshes.keys()[self.marshes.keys().index(closest)+1]
+            bottom = closest
+            
+        print bottom, top
+        
         return 30
     
     def closest_marshes_to(self, distance):
@@ -140,6 +154,7 @@ sif.center_stream(400)
 
 m = Race(dwg, fill='darkorange')
 m.add_marsh(distance=1, width=randrange(40,70))
+m.add_marsh(distance=280, width=randrange(40,70))
 m.add_marsh(distance=500, width=randrange(40,70))
 m.add_marsh(distance=680, width=randrange(40,70), label='mercury')
 m.flank(sif, 'r')
