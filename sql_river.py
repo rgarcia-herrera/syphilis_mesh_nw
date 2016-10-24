@@ -15,16 +15,16 @@ class Course(Base):
     # first drain
     def source(self):
         # add not-artificial to query
-        return session.query(Drain).with_parent(self, 'course').order_by(User.id).first()
+        return session.query(Drain).with_parent(self).order_by(Drain.offset).first()
 
     # last drain
     def sink(self):
         # add not-artificial to query        
-        return session.query(Drain).with_parent(self, 'course').order_by(User.id).desc().first()
+        return session.query(Drain).with_parent(self).order_by(Drain.offset.desc()).first()
     
     def update_length(self):
-        if session.query(Drain).with_parent(self, 'course').order_by(User.id).count()>=2:
-            self.length = self.source().offset - self.sink.offset
+        if session.query(Drain).with_parent(self).order_by(Drain.offset).count()>=2:
+            self.length = self.sink().offset - self.source().offset
             
 
 
@@ -64,3 +64,14 @@ engine = create_engine('sqlite:///:memory:', echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+Base.metadata.create_all(engine)
+
+
+d1=Drain(offset=1)
+d2=Drain(offset=10)
+c=Course()
+c.drains.append(d1)
+c.drains.append(d2)
+session.add(d1)
+session.add(d2)
+session.add(c)
