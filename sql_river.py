@@ -34,10 +34,16 @@ class Course(Base):
         self.update_length()
         return "<course %s len=%s drains=%s>" % (self.label, self.length, len(self.drains))
 
+    # b0rked
     def get_max_width(self):
         return sorted(self.drains, key=lambda x: x.width, reverse=True)[0].width
 
-    
+    def get_width_at_offset(self, offset):
+        upstream = filter(lambda d: d.offset<offset and d.artificial==False, self.drains)[-1]
+        downstream = filter(lambda d: d.offset>offset and d.artificial==False, self.drains)[0]
+        width_differential = downstream.width - upstream.width
+        return abs(width_differential \
+                   * (offset / (upstream.offset - downstream.offset)))
 
 class Drain(Base):
     __tablename__ = 'drains'
@@ -78,11 +84,13 @@ class River():
         for c in self.courses:
             natural_drains += filter(lambda d: d.artificial==False, c.drains)
 
+        # add artificial drains where needed
         for d in natural_drains:
             for c in self.courses:
                 if d not in c.drains:
                     c.add_drain( Drain( offset=d.offset, artificial=True) )
 
+        # set width of artificial drains
 
 
     def get_width(self):
