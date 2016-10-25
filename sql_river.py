@@ -69,10 +69,19 @@ class River():
         else:
             self.courses=courses
 
-        # match all drains
-        all_drains = []
+    def match_drains(self):
+        """ create artificial drains on courses
+        so that all courses have all drains,
+        that they may be aligned """
+        
+        natural_drains = []
         for c in self.courses:
-            all_drains += c.drains
+            natural_drains += filter(lambda d: d.artificial==False, c.drains)
+
+        for d in natural_drains:
+            for c in self.courses:
+                if d not in c.drains:
+                    c.add_drain( Drain( offset=d.offset, artificial=True) )
 
 
 
