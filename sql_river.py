@@ -30,7 +30,6 @@ class Course(Base):
                 Drain).with_parent(self).order_by(Drain.offset).count() >= 2:
             self.length = self.get_sink().offset - self.get_source().offset
 
-
     def add_drain(self, drain):
         self.drains.append(drain)
         self.update_length()
@@ -47,23 +46,24 @@ class Course(Base):
                       reverse=True)[0].width
 
     def get_width_at_offset(self, offset):
-        if offset < self.get_source().offset or offset > self.get_sink().offset:
+        if offset < self.get_source().offset \
+           or offset > self.get_sink().offset:
             return 0
         else:
-            try:
-                upstream = sorted(filter(lambda d: d.offset<offset and d.artificial==False,
-                                         self.drains),
-                                  key=lambda d: d.offset)[-1]
-                downstream = sorted(filter(lambda d: d.offset>offset and d.artificial==False,
-                                           self.drains),
-                                    key=lambda d: d.offset)[0]
-                width_differential = downstream.width - upstream.width                
-            except:
-                print offset
-                exit
-            print upstream, offset, downstream, width_differential,  (offset / (upstream.offset - downstream.offset))
-            return abs(width_differential \
-                       * (offset / (upstream.offset - downstream.offset)))
+            upstream = sorted(filter(lambda d: d.offset < offset
+                                     and d.artificial is False,
+                                     self.drains),
+                              key=lambda d: d.offset)[-1]
+            downstream = sorted(filter(lambda d: d.offset > offset
+                                       and d.artificial is False,
+                                       self.drains),
+                                key=lambda d: d.offset)[0]
+            width_differential = downstream.width - upstream.width
+            local_offset = offset - upstream.offset
+            distance = downstream.offset - upstream.offset
+            norm_offset = local_offset / distance
+            return (width_differential * norm_offset) + upstream.width
+
 
 
 class Drain(Base):
@@ -108,27 +108,16 @@ class River():
         for d in natural_drains:
             for c in self.courses:
                 if d not in c.drains:
-                    c.add_drain(Drain( offset=d.offset,
-                                       width=c.get_width_at_offset( d.offset ),
-                                       artificial=True))
-
-        # artificial_drains = []
-        # for c in self.courses:
-        #     artificial_drains += filter(lambda d: d.artificial==True, c.drains)
-
-        # print artificial_drains
-        # # set width of artificial drains
-        # for d in artificial_drains:
-        #     print d.offset,d.course,d.course.get_width_at_offset( d.offset )
-        #     d.width = d.course.
-        #     c.add_drain(Drain(offset=d.offset, artificial=True))
-
+                    c.add_drain(Drain(offset=d.offset,
+                                      width=c.get_width_at_offset(d.offset),
+                                      artificial=True))
 
     def get_width(self):
         w = 0
         for course in self.courses:
             w += course.get_max_width()
         return w
+
 
 # on assembling the river:
 # longest course should be centered
@@ -150,13 +139,14 @@ Base.metadata.create_all(engine)
 
 c = Course(label='volga',
            drains=[Drain(offset=3, width=6),
+                   Drain(offset=5, width=8),
                    Drain(offset=10, width=4)])
 session.add(c)
 
 
 c1 = Course(label='nile',
-            drains=[Drain(offset=1, width=6),
-                    Drain(offset=11, width=4),
+            drains=[Drain(offset=1, width=4),
+                    Drain(offset=11, width=6),
                     Drain(offset=20, width=7)])
 
 session.add(c1)
