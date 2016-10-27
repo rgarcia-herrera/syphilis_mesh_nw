@@ -13,18 +13,18 @@ class Course(Base):
     drains = relationship("Drain", back_populates="course")
 
     # first drain
-    def source(self):
+    def get_source(self):
         # add not-artificial to query
         return session.query(Drain).with_parent(self).order_by(Drain.offset).first()
 
     # last drain
-    def sink(self):
+    def get_sink(self):
         # add not-artificial to query
         return session.query(Drain).with_parent(self).order_by(Drain.offset.desc()).first()
 
     def update_length(self):
         if session.query(Drain).with_parent(self).order_by(Drain.offset).count()>=2:
-            self.length = self.sink().offset - self.source().offset
+            self.length = self.get_sink().offset - self.get_source().offset
 
     def add_drain(self, drain):
         self.drains.append(drain)
@@ -39,11 +39,21 @@ class Course(Base):
         return sorted(self.drains, key=lambda x: x.width, reverse=True)[0].width
 
     def get_width_at_offset(self, offset):
-        upstream = filter(lambda d: d.offset<offset and d.artificial==False, self.drains)[-1]
-        downstream = filter(lambda d: d.offset>offset and d.artificial==False, self.drains)[0]
-        width_differential = downstream.width - upstream.width
-        return abs(width_differential \
-                   * (offset / (upstream.offset - downstream.offset)))
+        if offset < self.get_source().offset or offset > self.get_sink().offset:
+            return 0
+        else:
+            try:
+                upstream = filter(lambda d: d.offset<offset and d.artificial==False,
+                                  self.drains)[-1]
+                downstream = filter(lambda d: d.offset>offset and d.artificial==False,
+                                    self.drains)[0]
+                width_differential = downstream.width - upstream.width                
+            except:
+                print offset
+                exit
+
+            return abs(width_differential \
+                       * (offset / (upstream.offset - downstream.offset)))
 
 class Drain(Base):
     __tablename__ = 'drains'
@@ -90,7 +100,15 @@ class River():
                 if d not in c.drains:
                     c.add_drain( Drain( offset=d.offset, artificial=True) )
 
+        artificial_drains = []
+        for c in self.courses:
+            artificial_drains += filter(lambda d: d.artificial==True, c.drains)
+
+        print artificial_drains
         # set width of artificial drains
+        for d in artificial_drains:
+            print d.offset,d.course,d.course.get_width_at_offset( d.offset )
+            d.width = d.course.get_width_at_offset( d.offset )
 
 
     def get_width(self):
