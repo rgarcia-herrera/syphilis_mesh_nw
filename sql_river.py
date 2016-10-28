@@ -2,6 +2,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, \
     Boolean, create_engine, ForeignKey
 from sqlalchemy.orm import relationship
+from pprint import pprint
 
 Base = declarative_base()
 
@@ -39,11 +40,6 @@ class Course(Base):
         return "<course %s len=%s drains=%s>" % (self.label,
                                                  self.length,
                                                  len(self.drains))
-
-    # b0rked
-    def get_max_width(self):
-        return sorted(self.drains, key=lambda x: x.width,
-                      reverse=True)[0].width
 
     def get_width_at_offset(self, offset):
         if offset < self.get_source().offset \
@@ -113,10 +109,18 @@ class River():
                                       artificial=True))
 
     def get_width(self):
-        w = 0
-        for course in self.courses:
-            w += course.get_max_width()
-        return w
+        self.match_drains()
+
+        widths = {}
+        for d in session.query(
+                Drain).order_by(Drain.offset).all():
+            if d.offset in widths:
+                widths[d.offset] += d.width
+            else:
+                widths[d.offset] = d.width
+
+        return sorted(widths.values())[-1]
+
 
 
 # on assembling the river:
