@@ -2,7 +2,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, \
     Boolean, create_engine, ForeignKey
 from sqlalchemy.orm import relationship
-from pprint import pprint
+import svgwrite
+
 
 Base = declarative_base()
 
@@ -60,11 +61,74 @@ class Course(Base):
             norm_offset = local_offset / distance
             return (width_differential * norm_offset) + upstream.width
 
+    def svg_paths(self, dwg):
+        self.paths = []
+        control_distance = 0.5
+        sorted_drains = sorted(self.drains,
+                               key=lambda d: d.offset)
+        for n in range(len(sorted_drains)-1):
+            d1 = sorted_drains[n]
+            d2 = sorted_drains[n+1]
 
+            x1 = d1.x - (d1.width/2.0)
+            y1 = d1.offset
 
+            x2 = d2.x - (d2.width/2.0)
+            y2 = d2.offset
+
+            c1x = x1
+            c1y = y1 + ((y2-y1)*control_distance)
+
+            c2x = x2
+            c2y = y2 - ((y2-y1)*control_distance)
+
+            x3 = d2.x + (d2.width/2.0)
+            y3 = d2.offset
+
+            x4 = d1.x + (d1.width/2.0)
+            y4 = d1.offset
+
+            c3x = x3
+            c3y = y3 - ((y3-y4)*control_distance)
+
+            c4x = x4
+            c4y = y4 + ((y2-y1)*control_distance)
+
+            p = dwg.path(d="M%d,%d Z" % (x1, y1),
+                         fill='grey',
+                         stroke="white",
+                         stroke_width=0)
+
+            # connect x1,y1 to x2, y2
+            p.push("C %d %d" % (c1x, c1y))
+            p.push("%d %d" % (c2x, c2y))
+            p.push("%d %d" % (x2, y2))
+
+            # line to x3, y3
+            p.push("L %d %d" % (x3, y3))
+
+            # connect x3,y3 to x4, y4
+            p.push("C %d %d" % (c3x, c3y))
+            p.push("%d %d" % (c4x, c4y))
+            p.push("%d %d" % (x4, y4))
+
+            # line from x4, y4 to x1, y1
+            p.push("L %d %d" % (x1, y1))
+
+            self.paths.append(p)
+
+    def render(self, dwg):
+        for p in self.paths:
+            dwg.add(p)
+
+    def center_at(self, x):
+        for d in self.drains:
+            d.x = x
+            
 class Drain(Base):
     __tablename__ = 'drains'
     id = Column(Integer, primary_key=True)
+    x = Column(Float, default=0)
     width = Column(Float, default=0)
     offset = Column(Float, default=0)
 
@@ -108,7 +172,7 @@ class River():
                                       width=c.get_width_at_offset(d.offset),
                                       artificial=True))
 
-    def get_width(self):
+    def get_max_width(self):
         self.match_drains()
 
         widths = {}
@@ -149,11 +213,18 @@ session.add(c)
 
 
 c1 = Course(label='nile',
-            drains=[Drain(offset=1, width=4),
-                    Drain(offset=11, width=6),
-                    Drain(offset=20, width=7)])
+            drains=[Drain(offset=1, width=40),
+                    Drain(offset=50, width=60),
+                    Drain(offset=150, width=80)])
 
 session.add(c1)
 session.commit()
 
 river = River()
+river.match_drains()
+
+dwg = svgwrite.Drawing(filename='prueba.svg')
+c1.center_at(200)
+c1.svg_paths(dwg)
+c1.render(dwg)
+dwg.save()
