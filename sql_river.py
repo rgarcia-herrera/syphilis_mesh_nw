@@ -13,9 +13,9 @@ class Course(Base):
     id = Column(Integer, primary_key=True)
     label = Column(String(200), nullable=True)
     length = Column(Float, default=0)
-    drains = relationship("Drain",
-                          back_populates="course",
-                          order_by=lambda: Drain.offset)
+    drains = relationship(lambda:Drain,
+                          order_by=lambda: Drain.offset,
+                          back_populates="course")
 
     # first drain
     def get_source(self):
@@ -28,22 +28,20 @@ class Course(Base):
                       self.drains)[-1]
 
     def update_length(self):
-        filter(lambda d: d.artificial is False,
-                      self.drains)
-        # if session.query(
-        #         Drain).with_parent(
-        #             self).order_by(Drain.offset).filter(
-        #                 Drain.artificial is False).count() >= 2:
-        #     self.length = self.get_sink().offset - self.get_source().offset
+        if len(filter(lambda d: d.artificial is False,
+               self.drains)) > 2:
+            self.length = self.get_sink().offset - self.get_source().offset
+        else:
+            self.length = 0
 
-    
     def add_drain(self, drain):
         self.drains.append(drain)
         self.update_length()
+        session.commit()
 
     def __repr__(self):
         self.update_length()
-        return "<course %s len=%s drains=%s>" % (self.label,
+        return "~~ %s len=%s drains=%s" % (self.label,
                                                  self.length,
                                                  len(self.drains))
 
@@ -126,7 +124,7 @@ class Course(Base):
     def center_at(self, x):
         for d in self.drains:
             d.x = x
-            
+
 class Drain(Base):
     __tablename__ = 'drains'
     id = Column(Integer, primary_key=True)
@@ -137,15 +135,15 @@ class Drain(Base):
     # artificial drains are automatically created to match courses
     artificial = Column(Boolean, default=False)
     course_id = Column(Integer, ForeignKey('courses.id'))
-    course = relationship("Course",
+    course = relationship(lambda:Course,
                           back_populates="drains")
 
     def __repr__(self):
         if self.artificial:
-            a = ' a'
+            a = 'a'
         else:
-            a = ''
-        return "<drain %s o=%s w=%s%s>" % (self.id, self.offset, self.width, a)
+            a = ' '
+        return "%s o=%s w=%s [%s]" % (a, self.offset, self.width, self.id)
 
 
 class River():
@@ -194,7 +192,7 @@ class River():
         # flank right
         pass
 
-    
+
 # on assembling the river:
 # longest course should be centered
 # flank it with decreasing order length
