@@ -64,7 +64,7 @@ class Course(Base):
             norm_offset = local_offset / distance
             return (width_differential * norm_offset) + upstream.width
 
-    def svg_paths(self, dwg):
+    def svg_paths(self, dwg, fill='grey'):
         self.paths = []
         control_distance = 0.5
         sorted_drains = sorted(self.drains,
@@ -73,52 +73,55 @@ class Course(Base):
             d1 = sorted_drains[n]
             d2 = sorted_drains[n+1]
 
-            x1 = d1.x - (d1.width/2.0)
-            y1 = d1.offset
+            if d1.offset >= self.get_source().offset and d1.offset < self.get_sink().offset \
+               and d2.offset > self.get_source().offset and d2.offset <= self.get_sink().offset:
+            
+                x1 = d1.x - (d1.width/2.0)
+                y1 = d1.offset
 
-            x2 = d2.x - (d2.width/2.0)
-            y2 = d2.offset
+                x2 = d2.x - (d2.width/2.0)
+                y2 = d2.offset
 
-            c1x = x1
-            c1y = y1 + ((y2-y1)*control_distance)
+                c1x = x1
+                c1y = y1 + ((y2-y1)*control_distance)
 
-            c2x = x2
-            c2y = y2 - ((y2-y1)*control_distance)
+                c2x = x2
+                c2y = y2 - ((y2-y1)*control_distance)
 
-            x3 = d2.x + (d2.width/2.0)
-            y3 = d2.offset
+                x3 = d2.x + (d2.width/2.0)
+                y3 = d2.offset
 
-            x4 = d1.x + (d1.width/2.0)
-            y4 = d1.offset
+                x4 = d1.x + (d1.width/2.0)
+                y4 = d1.offset
 
-            c3x = x3
-            c3y = y3 - ((y3-y4)*control_distance)
+                c3x = x3
+                c3y = y3 - ((y3-y4)*control_distance)
 
-            c4x = x4
-            c4y = y4 + ((y2-y1)*control_distance)
+                c4x = x4
+                c4y = y4 + ((y2-y1)*control_distance)
 
-            p = dwg.path(d="M%d,%d Z" % (x1, y1),
-                         fill='grey',
-                         stroke="white",
-                         stroke_width=0)
+                p = dwg.path(d="M%d,%d Z" % (x1, y1),
+                             fill=fill,
+                             stroke="white",
+                             stroke_width=0)
 
-            # connect x1,y1 to x2, y2
-            p.push("C %d %d" % (c1x, c1y))
-            p.push("%d %d" % (c2x, c2y))
-            p.push("%d %d" % (x2, y2))
+                # connect x1,y1 to x2, y2
+                p.push("C %d %d" % (c1x, c1y))
+                p.push("%d %d" % (c2x, c2y))
+                p.push("%d %d" % (x2, y2))
 
-            # line to x3, y3
-            p.push("L %d %d" % (x3, y3))
+                # line to x3, y3
+                p.push("L %d %d" % (x3, y3))
 
-            # connect x3,y3 to x4, y4
-            p.push("C %d %d" % (c3x, c3y))
-            p.push("%d %d" % (c4x, c4y))
-            p.push("%d %d" % (x4, y4))
+                # connect x3,y3 to x4, y4
+                p.push("C %d %d" % (c3x, c3y))
+                p.push("%d %d" % (c4x, c4y))
+                p.push("%d %d" % (x4, y4))
 
-            # line from x4, y4 to x1, y1
-            p.push("L %d %d" % (x1, y1))
+                # line from x4, y4 to x1, y1
+                p.push("L %d %d" % (x1, y1))
 
-            dwg.add(p)
+                dwg.add(p)
 
 
     def center_at(self, x):
@@ -140,10 +143,10 @@ class Drain(Base):
 
     def __repr__(self):
         if self.artificial:
-            a = 'a'
+            a = '<'
         else:
-            a = ' '
-        return "%s o=%s w=%s [%s]" % (a, self.offset, self.width, self.id)
+            a = '['
+        return "%s o=%s x=%s w=%s [%s]" % (a, self.offset, self.x, self.width, self.id)
 
 
 class River():
@@ -155,6 +158,27 @@ class River():
         else:
             self.courses = courses
 
+    def match_shores(self):
+        """ update x on all drains """
+        longest = self.get_longest_course()
+        longest.center_at(self.get_max_width()*0.5)
+        
+        courses = sorted(self.courses,
+                         key=lambda c: c.length,
+                         reverse=True)
+        
+        for i in range(1, len(courses)):
+            left = courses[i - 1]
+            right = courses[i]
+            for j in range(len(left.drains)):
+                right.drains[j].x = left.drains[j].x \
+                                    + left.drains[j].width * 0.5 \
+                                    + right.drains[j].width * 0.5
+
+                print left.drains[j], right.drains[j]
+                
+
+            
     def match_drains(self):
         """ create artificial drains on courses
         so that all courses have all drains,
@@ -185,12 +209,18 @@ class River():
 
         return sorted(widths.values())[-1]
 
+    def get_longest_course(self):
+        return sorted(self.courses,
+                      key=lambda c: c.length)[-1]
+        
     def flow_together(self):
-        # find longest course, center it
+        pass
+        # longest.center_at(self.get_max_width()*0.5)
+        
         # alternating in decreasing order
         # flank left
         # flank right
-        pass
+
 
 
 # on assembling the river:
@@ -211,25 +241,27 @@ session = Session()
 
 Base.metadata.create_all(engine)
 
-c = Course(label='volga',
-           drains=[Drain(offset=3, width=6),
-                   Drain(offset=5, width=8),
-                   Drain(offset=10, width=4)])
-session.add(c)
+nile = Course(label='nile',
+              drains=[Drain(offset=1, width=40),
+                      Drain(offset=50, width=60),
+                      Drain(offset=150, width=80)])
 
-
-c1 = Course(label='nile',
-            drains=[Drain(offset=1, width=40),
-                    Drain(offset=50, width=60),
-                    Drain(offset=150, width=80)])
-
-session.add(c1)
+session.add(nile)
 session.commit()
+
+volga = Course(label='volga',
+           drains=[Drain(offset=30, width=10),
+                   Drain(offset=70, width=20),
+                   Drain(offset=100, width=30)])
+session.add(volga)
+session.commit()
+
 
 river = River()
 river.match_drains()
+river.match_shores()
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
-c1.center_at(200)
-c1.svg_paths(dwg)
+nile.svg_paths(dwg, 'purple')
+volga.svg_paths(dwg, 'navy')
 dwg.save()
