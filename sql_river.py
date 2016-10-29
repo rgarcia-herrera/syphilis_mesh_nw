@@ -13,25 +13,30 @@ class Course(Base):
     id = Column(Integer, primary_key=True)
     label = Column(String(200), nullable=True)
     length = Column(Float, default=0)
-    drains = relationship("Drain", back_populates="course")
+    drains = relationship("Drain",
+                          back_populates="course",
+                          order_by=lambda: Drain.offset)
 
     # first drain
     def get_source(self):
-        # add not-artificial to query
-        return session.query(
-            Drain).with_parent(self).order_by(Drain.offset).first()
+        return filter(lambda d: d.artificial is False,
+                      self.drains)[0]
 
     # last drain
     def get_sink(self):
-        # add not-artificial to query
-        return session.query(
-            Drain).with_parent(self).order_by(Drain.offset.desc()).first()
+        return filter(lambda d: d.artificial is False,
+                      self.drains)[-1]
 
     def update_length(self):
-        if session.query(
-                Drain).with_parent(self).order_by(Drain.offset).count() >= 2:
-            self.length = self.get_sink().offset - self.get_source().offset
+        filter(lambda d: d.artificial is False,
+                      self.drains)
+        # if session.query(
+        #         Drain).with_parent(
+        #             self).order_by(Drain.offset).filter(
+        #                 Drain.artificial is False).count() >= 2:
+        #     self.length = self.get_sink().offset - self.get_source().offset
 
+    
     def add_drain(self, drain):
         self.drains.append(drain)
         self.update_length()
@@ -115,11 +120,8 @@ class Course(Base):
             # line from x4, y4 to x1, y1
             p.push("L %d %d" % (x1, y1))
 
-            self.paths.append(p)
-
-    def render(self, dwg):
-        for p in self.paths:
             dwg.add(p)
+
 
     def center_at(self, x):
         for d in self.drains:
@@ -185,8 +187,14 @@ class River():
 
         return sorted(widths.values())[-1]
 
+    def flow_together(self):
+        # find longest course, center it
+        # alternating in decreasing order
+        # flank left
+        # flank right
+        pass
 
-
+    
 # on assembling the river:
 # longest course should be centered
 # flank it with decreasing order length
@@ -226,5 +234,4 @@ river.match_drains()
 dwg = svgwrite.Drawing(filename='prueba.svg')
 c1.center_at(200)
 c1.svg_paths(dwg)
-c1.render(dwg)
 dwg.save()
