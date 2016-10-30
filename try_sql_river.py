@@ -1,37 +1,37 @@
 import svgwrite
 import sql_river as plt
+import random
 
-
-
-nile = plt.Course(label='nile',
-              drains=[plt.Drain(offset=1, width=40),
-                      plt.Drain(offset=50, width=60),
-                      plt.Drain(offset=200, width=80)])
-
-plt.session.add(nile)
-plt.session.commit()
-
-volga = plt.Course(label='volga',
-                   drains=[plt.Drain(offset=20, width=15),
-                           plt.Drain(offset=70, width=20),
-                           plt.Drain(offset=100, width=30)])
-plt.session.add(volga)
-plt.session.commit()
-
-rhin = plt.Course(label='rhin',
-                  drains=[plt.Drain(offset=40, width=30),
-                          plt.Drain(offset=80, width=20),
-                          plt.Drain(offset=130, width=40),
-                          plt.Drain(offset=180, width=15)])
-plt.session.add(rhin)
-plt.session.commit()
-
-river = plt.River()
-river.centralize_current()
+for n in range(7):
+    c = plt.Course(label=str(n), fill =
+                   random.choice(['red','green','blue','orange',
+                                  'aliceblue', 'aqua', 'aquamarine', 'azure',
+                                  'bisque', 'blanchedalmond', 'blueviolet', 'brown',
+                                  'burlywood', 'cadetblue', 'chartreuse',
+                                  'chocolate', 'coral', 'cornflowerblue', 'crimson',
+                                  'darkblue', 'darkcyan', 'darkgoldenrod',
+                                  'darkgray', 'darkgreen', 'darkgrey', 'darkkhaki',
+                                  'darkmagenta', 'darkolivegreen', 'darkorange',
+                                  'darkorchid', 'darkred', 'darksalmon',
+                                  'darkseagreen', 'darkslateblue', 'darkslategray',
+                                  'darkslategrey', 'darkturquoise', 'darkviolet',
+                                  'deeppink', 'deepskyblue', 'dimgray', 'dimgrey',
+                                  'dodgerblue', 'firebrick', 'forestgreen',
+                                  'gainsboro', 'gold', 'goldenrod', 'hotpink',
+                                  'indianred', 'indigo', 'khaki', 'lavender', ]))
+    plt.session.add(c)
+    plt.session.commit()
+    o = 1
+    for m in range(random.randint(8,35)):
+        o += random.randint(80,100)
+        d = plt.Drain(offset=o,
+                      width=random.randint(25,60))
+        c.add_drain(d)
 
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
-nile.svg_paths(dwg, 'purple')
-volga.svg_paths(dwg, 'navy')
-rhin.svg_paths(dwg, 'orange')
+
+river = plt.River(dwg)
+river.centralize_current()
+river.to_svg()
 dwg.save()
