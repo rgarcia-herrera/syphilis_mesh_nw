@@ -18,18 +18,19 @@ class Course(Base):
                           back_populates="course")
 
 
-    def flank(self, other, side='right'):
+    def flank_with(self, other, side='right'):
         """ align another course to the edge of self """
         if side=='right':
             sign = 1
         elif side=='left':
             sign = -1
+
         for j in range(len(self.drains)):
             other.drains[j].x = self.drains[j].x \
                                 + sign * self.drains[j].width * 0.5 \
                                 + sign * other.drains[j].width * 0.5
-        
-    
+
+
     # first drain
     def get_source(self):
         return filter(lambda d: d.artificial is False,
@@ -88,7 +89,7 @@ class Course(Base):
 
             if d1.offset >= self.get_source().offset and d1.offset < self.get_sink().offset \
                and d2.offset > self.get_source().offset and d2.offset <= self.get_sink().offset:
-            
+
                 x1 = d1.x - (d1.width/2.0)
                 y1 = d1.offset
 
@@ -169,12 +170,18 @@ class River():
             self.courses = session.query(
                 Course).order_by(Course.length.desc()).all()
         self.match_drains()
-        
+
+        margin = 100
+        center = margin + self.get_max_width()*0.5
+        for c in self.courses:
+            c.center_at(center)
+
+
     def match_drains(self):
         """ create artificial drains on courses
         so that all courses have all drains,
-        that they may be aligned """                    
-                    
+        that they may be aligned """
+
         natural_drains = []
         for c in self.courses:
             natural_drains += filter(lambda d: d.artificial is False, c.drains)
@@ -187,8 +194,13 @@ class River():
                                       width=c.get_width_at_offset(d.offset),
                                       artificial=True))
 
+    def get_rightmost_course(self):
+        return session.query(Drain).order_by(Drain.x.desc()).first().course
+
+    def get_leftmost_course(self):
+        return session.query(Drain).order_by(Drain.x).first().course
+
     def get_max_width(self):
-        self.match_drains()
 
         widths = {}
         for d in session.query(
@@ -203,42 +215,26 @@ class River():
     def get_longest_course(self):
         return sorted(self.courses,
                       key=lambda c: c.length)[-1]
-        
-    def flow_together(self):
-        #longest = self.get_longest_course()
-        #print longest
-        # longest.center_at(self.get_max_width()*0.5)
 
-
-        courses = sorted(river.courses, key=lambda c: c.length, reverse=True)
-
-        for n in range(len(courses)-1):
-
+    def centralize_current(self):
+        # iteration count for swinging between right and left
+        n = 1
+        # all but the longest course are outer courses
+        for outer in sorted(river.courses,
+                            key=lambda c: c.length, reverse=True)[1:]:
             if n % 2:
-                side = 'right'
-            else:
                 side = 'left'
-
-            big = courses[n]
-            small = courses[n + 1]
-
-            big.flank(small, side)
-        
-        
-        # alternating in decreasing order
-        # flank left
-        # flank right
+                inner = self.get_leftmost_course()
+            else:
+                side = 'right'
+                inner = self.get_rightmost_course()
+            inner.flank_with(outer, side)
+            n+=1
 
 
-
-# on assembling the river:
-# longest course should be centered
-# flank it with decreasing order length
-# horizontal center everything querying max width of river
-
-
-
-
+####################
+# Let's try it out #
+####################
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -277,10 +273,7 @@ session.commit()
 river = River()
 
 
-nile.center_at(300)
-river.flow_together()
-#nile.flank(rhin, 'left')
-#nile.flank(volga, 'right')
+river.centralize_current()
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
 nile.svg_paths(dwg, 'purple')
