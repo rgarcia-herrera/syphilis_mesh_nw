@@ -15,6 +15,7 @@ class Course(Base):
     id = Column(Integer, primary_key=True)
     label = Column(String(200), nullable=True)
     length = Column(Float, default=0)
+    fill = Column(String(200), nullable=True)
     drains = relationship(lambda:Drain,
                           order_by=lambda: Drain.offset,
                           back_populates="course")
@@ -80,7 +81,7 @@ class Course(Base):
             norm_offset = local_offset / distance
             return (width_differential * norm_offset) + upstream.width
 
-    def svg_paths(self, dwg, fill='grey'):
+    def svg_paths(self, dwg):
         self.paths = []
         control_distance = 0.5
         sorted_drains = sorted(self.drains,
@@ -117,9 +118,9 @@ class Course(Base):
                 c4y = y4 + ((y2-y1)*control_distance)
 
                 p = dwg.path(d="M%d,%d Z" % (x1, y1),
-                             fill=fill,
-                             stroke="white",
-                             stroke_width=0)
+                             fill=self.fill,
+                             stroke=self.fill,
+                             stroke_width=1)
 
                 # connect x1,y1 to x2, y2
                 p.push("C %d %d" % (c1x, c1y))
@@ -166,15 +167,22 @@ class Drain(Base):
 
 
 class River():
-    def __init__(self, init=True):
+    def __init__(self, dwg, init=True):
         # auto init courses
         if init:
             self.courses = session.query(
                 Course).order_by(Course.length.desc()).all()
-        self.match_drains()
 
-        margin = 100
-        center = margin + self.get_max_width()*0.5
+        self.match_drains()
+        self.center_align_all_courses()
+        self.dwg = dwg
+
+    def to_svg(self):
+        for c in self.courses:
+            c.svg_paths(self.dwg)
+
+    def center_align_all_courses(self, margin=100):
+        center = margin + self.get_max_width() * 0.5
         for c in self.courses:
             c.center_at(center)
 
