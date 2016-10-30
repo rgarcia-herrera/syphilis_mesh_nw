@@ -21,19 +21,22 @@ I immediately thought of this timeline:
 
 [source](https://xkcd.com/1127/)
 
-So I did a [search for syphilis in
+## PubMed Mining
+
+A [search for syphilis in
 PubMed](https://www.ncbi.nlm.nih.gov/pubmed/?term=syphilis), a large
-database of citations for biomedical literature.
+database of citations for biomedical literature, yields 33,659
+citations, from years 1817 to 2016.
 
-There's 33,659 citations, from 1817 to 2016.
+[MeSH terms](https://www.nlm.nih.gov/mesh/meshhome.html) are extracted
+from each citation, when they were available, or keywords are chosen
+from the title or abstract using
+[Pattern](http://www.clips.ua.ac.be/pages/pattern-vector), a natural
+language processor.
 
-I then grabbed [MeSH
-terms](https://www.nlm.nih.gov/mesh/meshhome.html) from each citation,
-when they were available, or took keywords from the title or abstract
-using [Pattern](http://www.clips.ua.ac.be/pages/pattern-vector), a
-natural language processor.
+Grouping these keywords per year creates a data structure that can be
+plotted in a timeline like the one shown above.
 
-I've grouped these keywords per year, next I'll try to plot them!
 
 ## RiverPlot library
 
