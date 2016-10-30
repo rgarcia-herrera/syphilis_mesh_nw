@@ -17,6 +17,17 @@ class Course(Base):
                           order_by=lambda: Drain.offset,
                           back_populates="course")
 
+
+    def flank(self, other, side='left'):
+        """ align another course to the edge of self """
+        for j in range(len(self.drains)):
+            other.drains[j].x = self.drains[j].x \
+                                + self.drains[j].width * 0.5 \
+                                + other.drains[j].width * 0.5
+
+            print self.drains[j], other.drains[j]
+        
+    
     # first drain
     def get_source(self):
         return filter(lambda d: d.artificial is False,
@@ -46,10 +57,11 @@ class Course(Base):
                                                  len(self.drains))
 
     def get_width_at_offset(self, offset):
-        if offset < self.get_source().offset \
-           or offset > self.get_sink().offset:
+        if offset <= self.get_source().offset \
+           or offset >= self.get_sink().offset:
             return 0
         else:
+            print self.get_source().offset, offset, self.get_sink().offset
             upstream = sorted(filter(lambda d: d.offset < offset
                                      and d.artificial is False,
                                      self.drains),
@@ -143,10 +155,10 @@ class Drain(Base):
 
     def __repr__(self):
         if self.artificial:
-            a = '<'
+            a = 'a'
         else:
-            a = '['
-        return "%s o=%s x=%s w=%s [%s]" % (a, self.offset, self.x, self.width, self.id)
+            a = ' '
+        return "<%s s%s %s@%s [%s]>" % (a, self.offset, self.width, self.x, self.id)
 
 
 class River():
@@ -244,24 +256,37 @@ Base.metadata.create_all(engine)
 nile = Course(label='nile',
               drains=[Drain(offset=1, width=40),
                       Drain(offset=50, width=60),
-                      Drain(offset=150, width=80)])
+                      Drain(offset=200, width=80)])
 
 session.add(nile)
 session.commit()
 
 volga = Course(label='volga',
-           drains=[Drain(offset=30, width=10),
-                   Drain(offset=70, width=20),
-                   Drain(offset=100, width=30)])
+               drains=[Drain(offset=20, width=15),
+                       Drain(offset=70, width=20),
+                       Drain(offset=100, width=30)])
 session.add(volga)
+session.commit()
+
+
+rhin = Course(label='rhin',
+              drains=[Drain(offset=40, width=30),
+                      Drain(offset=80, width=20),
+                      Drain(offset=130, width=40),
+                      Drain(offset=180, width=15)])
+session.add(rhin)
 session.commit()
 
 
 river = River()
 river.match_drains()
-river.match_shores()
+#river.match_shores()
+
+nile.flank(rhin)
+rhin.flank(volga)
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
 nile.svg_paths(dwg, 'purple')
 volga.svg_paths(dwg, 'navy')
+rhin.svg_paths(dwg, 'orange')
 dwg.save()
