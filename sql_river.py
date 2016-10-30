@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Float, \
     Boolean, create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 import svgwrite
-
+from pprint import pprint
 
 Base = declarative_base()
 
@@ -63,7 +63,6 @@ class Course(Base):
            or offset >= self.get_sink().offset:
             return 0
         else:
-            print self.get_source().offset, offset, self.get_sink().offset
             upstream = sorted(filter(lambda d: d.offset < offset
                                      and d.artificial is False,
                                      self.drains),
@@ -164,34 +163,11 @@ class Drain(Base):
 
 
 class River():
-    def __init__(self, courses=[], init=True):
+    def __init__(self, init=True):
         # auto init courses
         if init:
             self.courses = session.query(
-                Course).order_by(Course.id.desc()).all()
-        else:
-            self.courses = courses
-
-    def match_shores(self):
-        """ update x on all drains """
-        longest = self.get_longest_course()
-        longest.center_at(self.get_max_width()*0.5)
-        
-        courses = sorted(self.courses,
-                         key=lambda c: c.length,
-                         reverse=True)
-        
-        for i in range(1, len(courses)):
-            left = courses[i - 1]
-            right = courses[i]
-            for j in range(len(left.drains)):
-                right.drains[j].x = left.drains[j].x \
-                                    + left.drains[j].width * 0.5 \
-                                    + right.drains[j].width * 0.5
-
-                print left.drains[j], right.drains[j]
-                
-
+                Course).order_by(Course.length.desc()).all()
             
     def match_drains(self):
         """ create artificial drains on courses
@@ -228,8 +204,25 @@ class River():
                       key=lambda c: c.length)[-1]
         
     def flow_together(self):
-        pass
-        # longest.center_at(self.get_max_width()*0.5)
+        longest = self.get_longest_course()
+        longest.center_at(self.get_max_width()*0.5)
+
+        courses = sorted(river.courses, key=lambda c: c.length, reverse=True)
+        print courses, len(courses)-1
+        for n in range(len(courses)-1):
+
+            if n % 2:
+                side = 'right'
+            else:
+                side = 'left'
+            print "n", n, side                
+            big = courses[n]
+            small = courses[n + 1]
+
+            pprint( big.drains)
+            pprint(small.drains)
+            big.flank(small, side)
+        
         
         # alternating in decreasing order
         # flank left
@@ -282,12 +275,11 @@ session.commit()
 
 river = River()
 river.match_drains()
-#river.match_shores()
-nile.center_at(300)
 
-
-nile.flank(rhin, 'left')
-nile.flank(volga, 'right')
+river.flow_together()
+#nile.center_at(300)
+#nile.flank(rhin, 'left')
+#nile.flank(volga, 'right')
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
 nile.svg_paths(dwg, 'purple')
