@@ -17,7 +17,7 @@ Scientific Fact](http://www.evolocus.com/Textbooks/Fleck1979.pdf):
 
 I immediately thought of this timeline:
 
-<img src="http://imgs.xkcd.com/comics/congress.png">
+<img src="http://imgs.xkcd.com/comics/congress.png" height="500px">
 
 [source](https://xkcd.com/1127/)
 
@@ -35,9 +35,10 @@ natural language processor.
 
 I've grouped these keywords per year, next I'll try to plot them!
 
-I have some progress into a RiverPlot library. So far I can define
-races that run down, and I can make them flank each other on the
-right. It looks great!
+## RiverPlot library
+
+Checkout the API in [try_sql_river.py](try_sql_river.py). It's mostly
+done, but there's room for improvement: labels, styles.
 
 <img src="river.png">
 
