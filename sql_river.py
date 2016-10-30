@@ -168,12 +168,13 @@ class River():
         if init:
             self.courses = session.query(
                 Course).order_by(Course.length.desc()).all()
-            
+        self.match_drains()
+        
     def match_drains(self):
         """ create artificial drains on courses
         so that all courses have all drains,
-        that they may be aligned """
-
+        that they may be aligned """                    
+                    
         natural_drains = []
         for c in self.courses:
             natural_drains += filter(lambda d: d.artificial is False, c.drains)
@@ -204,23 +205,23 @@ class River():
                       key=lambda c: c.length)[-1]
         
     def flow_together(self):
-        longest = self.get_longest_course()
-        longest.center_at(self.get_max_width()*0.5)
+        #longest = self.get_longest_course()
+        #print longest
+        # longest.center_at(self.get_max_width()*0.5)
+
 
         courses = sorted(river.courses, key=lambda c: c.length, reverse=True)
-        print courses, len(courses)-1
+
         for n in range(len(courses)-1):
 
             if n % 2:
                 side = 'right'
             else:
                 side = 'left'
-            print "n", n, side                
+
             big = courses[n]
             small = courses[n + 1]
 
-            pprint( big.drains)
-            pprint(small.drains)
             big.flank(small, side)
         
         
@@ -274,10 +275,10 @@ session.commit()
 
 
 river = River()
-river.match_drains()
 
+
+nile.center_at(300)
 river.flow_together()
-#nile.center_at(300)
 #nile.flank(rhin, 'left')
 #nile.flank(volga, 'right')
 
