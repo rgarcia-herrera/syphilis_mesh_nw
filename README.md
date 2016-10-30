@@ -24,9 +24,8 @@ I immediately thought of this timeline:
 ## PubMed Mining
 
 A [search for syphilis in
-PubMed](https://www.ncbi.nlm.nih.gov/pubmed/?term=syphilis), a large
-database of citations for biomedical literature, yields 33,659
-citations, from years 1817 to 2016.
+PubMed](https://www.ncbi.nlm.nih.gov/pubmed/?term=syphilis) yields 33,659
+citations, spanning years 1817 to 2016.
 
 [MeSH terms](https://www.nlm.nih.gov/mesh/meshhome.html) are extracted
 from each citation, when they were available, or keywords are chosen
