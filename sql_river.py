@@ -18,14 +18,16 @@ class Course(Base):
                           back_populates="course")
 
 
-    def flank(self, other, side='left'):
+    def flank(self, other, side='right'):
         """ align another course to the edge of self """
+        if side=='right':
+            sign = 1
+        elif side=='left':
+            sign = -1
         for j in range(len(self.drains)):
             other.drains[j].x = self.drains[j].x \
-                                + self.drains[j].width * 0.5 \
-                                + other.drains[j].width * 0.5
-
-            print self.drains[j], other.drains[j]
+                                + sign * self.drains[j].width * 0.5 \
+                                + sign * other.drains[j].width * 0.5
         
     
     # first drain
@@ -281,9 +283,11 @@ session.commit()
 river = River()
 river.match_drains()
 #river.match_shores()
+nile.center_at(300)
 
-nile.flank(rhin)
-rhin.flank(volga)
+
+nile.flank(rhin, 'left')
+nile.flank(volga, 'right')
 
 dwg = svgwrite.Drawing(filename='prueba.svg')
 nile.svg_paths(dwg, 'purple')
