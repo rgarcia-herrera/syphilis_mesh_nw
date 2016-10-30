@@ -3,7 +3,9 @@ from sqlalchemy import Column, Integer, String, Float, \
     Boolean, create_engine, ForeignKey
 from sqlalchemy.orm import relationship
 import svgwrite
-from pprint import pprint
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 
 Base = declarative_base()
 
@@ -220,7 +222,7 @@ class River():
         # iteration count for swinging between right and left
         n = 1
         # all but the longest course are outer courses
-        for outer in sorted(river.courses,
+        for outer in sorted(self.courses,
                             key=lambda c: c.length, reverse=True)[1:]:
             if n % 2:
                 side = 'left'
@@ -232,51 +234,10 @@ class River():
             n+=1
 
 
-####################
-# Let's try it out #
-####################
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 engine = create_engine('sqlite:///:memory:', echo=False)
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
 Base.metadata.create_all(engine)
-
-nile = Course(label='nile',
-              drains=[Drain(offset=1, width=40),
-                      Drain(offset=50, width=60),
-                      Drain(offset=200, width=80)])
-
-session.add(nile)
-session.commit()
-
-volga = Course(label='volga',
-               drains=[Drain(offset=20, width=15),
-                       Drain(offset=70, width=20),
-                       Drain(offset=100, width=30)])
-session.add(volga)
-session.commit()
-
-
-rhin = Course(label='rhin',
-              drains=[Drain(offset=40, width=30),
-                      Drain(offset=80, width=20),
-                      Drain(offset=130, width=40),
-                      Drain(offset=180, width=15)])
-session.add(rhin)
-session.commit()
-
-
-river = River()
-
-
-river.centralize_current()
-
-dwg = svgwrite.Drawing(filename='prueba.svg')
-nile.svg_paths(dwg, 'purple')
-volga.svg_paths(dwg, 'navy')
-rhin.svg_paths(dwg, 'orange')
-dwg.save()
