@@ -10,12 +10,43 @@ import csv
 uninteresting_terms = ['Humans', 'Male', 'Female', ]
 
 
+class Year:
+
+    refs = {}
+
+    def __init__(self, year):
+        self.year = year
+
+    def add_ref(self, pmid, kw_fq):
+        self.refs[pmid] = kw_fq
+
+    def get_keywords(self):
+        kw = set()
+        for pmid in self.refs:
+            for w in self.refs[pmid].keys():
+                kw.add(w)
+        return kw
+
+    def get_frequencies_for_kw(self, kw):
+        freqs = list()
+        for pmid in self.refs:
+            freqs.append(self.refs[pmid].get(kw, 0))
+        return freqs
+
+    def get_normalized_kw_fq(self):
+        kw_fq = dict()
+        for kw in self.get_keywords():
+            kw_fq[kw] = sum(self.get_frequencies_for_kw(kw)) \
+                        / float(len(self.get_keywords()))
+        return kw_fq
+
 def flatten_MH(MH):
     mh = []
     for term in MH:
         words = term.split('/')
         for w in words:
             if w not in uninteresting_terms:
+                # TODO: MeSH terms marked with * are Important
                 mh.append(w.replace('*', ''))
     return mh
 
