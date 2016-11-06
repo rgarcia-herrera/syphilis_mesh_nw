@@ -24,8 +24,9 @@ records = Medline.parse(open('fixture.medline'))
 for r in records:
     c = Citation(r)
 
-    print c.get_meshterms()
-    
-    if r.get('PMID') == 27663926:
+    if r.get('PMID') == '27665546':
+        assert c.get_meshterms() == {'sexual behavior': 0.2, 'africa':
+                                     0.2, 'chlamydia': 0.2,
+                                     'gonorrhea': 0.2, 'syphilis': 0.2}
+    if r.get('PMID') == '27663926':
         assert c.get_keywords() == {u'tattoo': 0.5, u'tinea': 0.5}
-
