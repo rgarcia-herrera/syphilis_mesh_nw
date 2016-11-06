@@ -5,6 +5,7 @@ import datetime
 
 uninteresting_terms = ['Humans', 'Male', 'Female', ]
 
+
 class Year:
 
     refs = {}
@@ -56,6 +57,8 @@ class Citation:
             mh = Document(self.record['MH'])
         elif 'OT' in self.record:
             mh = Document(self.record['OT'])
+        else:
+            return {}
 
         main_terms = set()
         other_terms = set()
@@ -87,7 +90,12 @@ class Citation:
         return terms
 
     def get_keywords(self):
-        d = Document(r.get('TI', r.get('AB')))
+        """ use pattern.Document to grab keywords from title or abstract """
         # if 'OT' not in self.record and 'MH' not in r:
-        
-        
+        d = Document(self.record.get('TI',
+                                     self.record.get('AB')))
+        kw = dict()
+        for w in d.keywords():
+            kw[w[1]] = w[0]
+
+        return kw
