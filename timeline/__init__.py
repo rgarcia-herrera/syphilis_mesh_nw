@@ -60,16 +60,16 @@ class Citation:
         else:
             return {}
 
-        main_terms = set()
-        other_terms = set()
+        main_terms = list()
+        other_terms = list()
         for term in mh:
             words = term.split('/')
             for w in words:
                 if w not in uninteresting_terms:
                     if '*' in w:
-                        main_terms.add(w.replace('*', ''))
+                        main_terms.append(w.replace('*', ''))
                     else:
-                        other_terms.add(w)
+                        other_terms.append(w)
         total_terms = float(len(main_terms) + len(other_terms))
         main_terms_fq = dict()
         for term in main_terms:
@@ -81,11 +81,11 @@ class Citation:
         # importance adjusted frequency total
         f = sum(main_terms_fq.values()) + sum(other_terms_fq.values())
 
-        terms = dict()
+        terms = {term: 0 for term in main_terms + other_terms}
         for term in main_terms:
-            terms[term] = main_terms_fq[term] / f
+            terms[term] += main_terms_fq[term] / f
         for term in other_terms:
-            terms[term] = other_terms_fq[term] / f
+            terms[term] += other_terms_fq[term] / f
 
         return terms
 
