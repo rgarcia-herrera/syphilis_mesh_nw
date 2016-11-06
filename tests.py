@@ -22,8 +22,10 @@ assert y.get_normalized_kw_fq() == {'mercury': 0.0875, 'methods': 0.175,
 # test citation class
 records = Medline.parse(open('fixture.medline'))
 for r in records:
-    if r.get('PMID') == 27663926:
-        c = Citation(r)
-        assert c.get_keywords() == {u'tattoo': 0.5, u'tinea': 0.5}
+    c = Citation(r)
 
     print c.get_meshterms()
+    
+    if r.get('PMID') == 27663926:
+        assert c.get_keywords() == {u'tattoo': 0.5, u'tinea': 0.5}
+

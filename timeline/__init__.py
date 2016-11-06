@@ -83,9 +83,9 @@ class Citation:
 
         terms = dict()
         for term in main_terms:
-            terms[term] = main_terms_fq / f
+            terms[term] = main_terms_fq[term] / f
         for term in other_terms:
-            terms[term] = other_terms_fq / f
+            terms[term] = other_terms_fq[term] / f
 
         return terms
 
