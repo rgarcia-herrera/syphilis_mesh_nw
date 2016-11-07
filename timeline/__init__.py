@@ -8,10 +8,9 @@ uninteresting_terms = ['Humans', 'Male', 'Female', ]
 
 class Year:
 
-    refs = {}
-
     def __init__(self, year):
         self.year = year
+        self.refs = dict()
 
     def add_ref(self, pmid, kw_fq):
         self.refs[pmid] = kw_fq
@@ -43,6 +42,9 @@ class Citation:
         self.record = medline_record
 
         # get citation date
+        if 'EDAT' not in medline_record.keys():
+            print medline_record.keys(), medline_record
+        
         assert 'EDAT' in medline_record.keys()
         try:
             conv = time.strptime(medline_record['EDAT'], "%Y/%m/%d %H:%M")
@@ -96,6 +98,13 @@ class Citation:
                                      self.record.get('AB')))
         kw = dict()
         for w in d.keywords():
-            kw[w[1]] = w[0]
+            try:
+                # numbers are uninteresting
+                # try to convert word to integer
+                int(w[1])
+            except ValueError:
+                # only keep them if they fail
+               kw[w[1]] = w[0]
 
         return kw
+    
