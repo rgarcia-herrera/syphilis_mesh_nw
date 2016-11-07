@@ -30,3 +30,4 @@ for r in records:
                                      'gonorrhea': 0.2, 'syphilis': 0.2}
     if r.get('PMID') == '27663926':
         assert c.get_keywords() == {u'tattoo': 0.5, u'tinea': 0.5}
+        # TODO: test date init
