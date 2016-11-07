@@ -1,3 +1,5 @@
+from timeline import Year
+from timeline import Citation
 import distance
 from itertools import combinations
 from pattern.vector import Document
@@ -7,133 +9,56 @@ from pprint import pprint
 import json
 import csv
 
-uninteresting_terms = ['Humans', 'Male', 'Female', ]
-
-
-class Year:
-
-    refs = {}
-
-    def __init__(self, year):
-        self.year = year
-
-    def add_ref(self, pmid, kw_fq):
-        self.refs[pmid] = kw_fq
-
-    def get_keywords(self):
-        kw = set()
-        for pmid in self.refs:
-            for w in self.refs[pmid].keys():
-                kw.add(w)
-        return kw
-
-    def get_frequencies_for_kw(self, kw):
-        freqs = list()
-        for pmid in self.refs:
-            freqs.append(self.refs[pmid].get(kw, 0))
-        return freqs
-
-    def get_normalized_kw_fq(self):
-        kw_fq = dict()
-        for kw in self.get_keywords():
-            kw_fq[kw] = sum(self.get_frequencies_for_kw(kw)) \
-                        / float(len(self.get_keywords()))
-        return kw_fq
-
-def flatten_MH(MH):
-    mh = []
-    for term in MH:
-        words = term.split('/')
-        for w in words:
-            if w not in uninteresting_terms:
-                # TODO: MeSH terms marked with * are Important
-                mh.append(w.replace('*', ''))
-    return mh
-
 records = Medline.parse(open('syphilis_pubmed.medline'))
-terms = {n: {'freq': {}, 'publications': 0} for n in range(1817, 2017)}
+#records = Medline.parse(open('try.medline'))
+#terms = {n: {'freq': {}, 'publications': 0} for n in range(1817, 2017)}
+terms = {n: Year(n) for n in range(1817, 2017)}
 all_kw = set()
 
 for r in records:
-    if 'EDAT' in r.keys():
-        # evenly format dates
-        try:
-            conv = time.strptime(r['EDAT'], "%Y/%m/%d %H:%M")
-            date = datetime.datetime(*conv[:6])  # entrez date
-        except ValueError:
-            conv = time.strptime(r['EDAT'], "%Y/%m/%d")
-            date = datetime.datetime(*conv[:6])  # entrez date
+    c = Citation(r)
+    kw = c.get_meshterms()
+    if len(kw.keys()) == 0:
+        kw = c.get_keywords()
 
-        terms[date.year]['publications'] += 1
+    terms[c.date.year].add_ref(r.get('PMID'), kw)
 
-        if 'MH' in r:
-            # grab mesh terms
-            d = Document(flatten_MH(r['MH']))
-        elif 'OT' in r:
-            d = Document(flatten_MH(r['OT']))
-        elif 'OT' not in r and 'MH' not in r:
-            # no MH nor OT?
-            # grab terms from title or abstract
-            d = Document(r.get('TI', r.get('AB')))
+    # add them to global kw set
+    for w in kw:
+        all_kw.add(w)
 
-        # grab keywords from citation
-        kw = set()
-        for w in d.keywords():
-            try:
-                # numbers are uninteresting
-                # try to convert kw to integer
-                int(w[1])
-            except ValueError:
-                # only keep them if they fail
-                kw.add(w[1])
-
-        # add them to global kw set
-        for w in kw:
-            all_kw.add(w)
-
-        # keep frequencies of collected words so far for this year
-        for w in all_kw:
-            terms[date.year]['freq'][w] = d.term_frequency(w)
-
-pprint(terms)
-exit(0)
-
-top_terms = {n: {'kw': [], 'publications': 0} for n in range(1817, 2017)}
+normalized_terms = dict()
 for year in terms:
-    top_terms[year]['publications'] = terms[year]['publications']
-    if top_terms[year]['publications']/20 <= 10:
-        top = 10
-    else:
-        top = top_terms[year]['publications']/20   # top 5%
-
-    d = Document(terms[year]['kw'])
-    kwords = d.keywords(top=top)
-
-    top_terms[year]['kw'] = {kw[1]:kw[0] for kw in kwords}
-
-    
-# create set with all the keywords
-all_kw = set()
-for year in top_terms:
-    for kw in top_terms[year]['kw'].keys():
-        all_kw.add(kw)
-
+    normalized_terms[year] = terms[year].get_normalized_kw_fq()
 
 
 # write csv file of keywords and their usage
-with open('top_kw.csv', 'w') as csvfile:
+with open('syphilis_all_kw.csv', 'w') as csvfile:
     w = csv.writer(csvfile)
-    w.writerow(['kw',] + sorted(top_terms.keys()))
+    w.writerow(['kw',] + range(1817, 2017))
     for kw in sorted(all_kw):
         row = [kw, ]
-        for year in top_terms:
-            if kw in top_terms[year]['kw']:
-                row.append(top_terms[year]['kw'][kw] * top_terms[2016]['publications'] )
-            else:
-                row.append(0)
+        for year in terms:
+            row.append(normalized_terms[year].get(kw, 0))
         w.writerow(row)
-
         
+
+# top_terms = {n: {'kw': [], 'publications': 0} for n in range(1817, 2017)}
+# for year in terms:
+#     top_terms[year]['publications'] = terms[year]['publications']
+#     if top_terms[year]['publications']/20 <= 10:
+#         top = 10
+#     else:
+#         top = top_terms[year]['publications']/20   # top 5%
+
+#     d = Document(terms[year]['kw'])
+#     kwords = d.keywords(top=top)
+
+#     top_terms[year]['kw'] = {kw[1]:kw[0] for kw in kwords}
+
+
+exit(0)
+                       
 # compute distances among all pairs of keywords
 sdist = {}
 for pair in combinations(all_kw, 2):
