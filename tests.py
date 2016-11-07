@@ -2,6 +2,8 @@ from timeline import Year
 from timeline import Citation
 from Bio import Medline
 
+# TODO: convert into pytest http://docs.pytest.org/en/latest/
+
 # test year class
 y = Year(1817)
 y.add_ref('pmid123', {'syphilis': 0.5,
