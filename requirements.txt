@@ -2,3 +2,4 @@ pattern
 svgwrite
 networkx
 biopython
+pytest
