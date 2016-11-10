@@ -1,9 +1,8 @@
 from pattern.vector import Document
 import time
 import datetime
-
-
-uninteresting_terms = ['Humans', 'Male', 'Female', ]
+from term_groups import groupterm
+from term_groups import uninteresting_terms
 
 
 class Year:
@@ -67,12 +66,12 @@ class Citation:
         for term in mh:
             words = term.split('/')
             for w in words:
-                # TODO: group terms
                 if w not in uninteresting_terms:
                     if '*' in w:
-                        main_terms.append(w.replace('*', ''))
+                        term = w.replace('*', '')
+                        main_terms.append(groupterm.get(term, term))
                     else:
-                        other_terms.append(w)
+                        other_terms.append(groupterm.get(w, w))
         total_terms = float(len(main_terms) + len(other_terms))
         main_terms_fq = dict()
         for term in main_terms:
