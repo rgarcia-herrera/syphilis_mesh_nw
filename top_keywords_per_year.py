@@ -38,9 +38,10 @@ with open('syphilis_all_kw.csv', 'w') as csvfile:
     w.writerow(['kw',] + range(1817, 2017))
     for kw in sorted(all_kw):
         row = [kw, ]
-        for year in terms:
-            row.append(normalized_terms[year].get(kw, 0))
-        w.writerow(row)
+        for year in range(1817, 2017):
+            row.append(normalized_terms[year].get(kw, 0) * len(terms[year].refs.keys()))
+        if len(row) - row.count(0) > 30: # at least appear 29 times
+            w.writerow(row)
         
 
 # top_terms = {n: {'kw': [], 'publications': 0} for n in range(1817, 2017)}
