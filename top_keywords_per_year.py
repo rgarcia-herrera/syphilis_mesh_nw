@@ -32,6 +32,7 @@ for year in terms:
     normalized_terms[year] = terms[year].get_normalized_kw_fq()
 
 
+# TODO: writing years as rows allows for nice pandas usage
 # write csv file of keywords and their usage
 with open('syphilis_all_kw.csv', 'w') as csvfile:
     w = csv.writer(csvfile)

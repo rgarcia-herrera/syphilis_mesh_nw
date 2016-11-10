@@ -67,6 +67,7 @@ class Citation:
         for term in mh:
             words = term.split('/')
             for w in words:
+                # TODO: group terms
                 if w not in uninteresting_terms:
                     if '*' in w:
                         main_terms.append(w.replace('*', ''))
