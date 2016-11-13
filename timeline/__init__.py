@@ -43,7 +43,7 @@ class Citation:
         # get citation date
         if 'EDAT' not in medline_record.keys():
             print medline_record.keys(), medline_record
-        
+
         assert 'EDAT' in medline_record.keys()
         try:
             conv = time.strptime(medline_record['EDAT'], "%Y/%m/%d %H:%M")
@@ -104,7 +104,6 @@ class Citation:
                 int(w[1])
             except ValueError:
                 # only keep them if they fail
-               kw[w[1]] = w[0]
+                kw[w[1]] = w[0]
 
         return kw
-    
