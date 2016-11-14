@@ -24,10 +24,14 @@ class Course():
         elif side == 'left':
             sign = -1
 
-        for j in range(len(self.drains)):
-            other.drains[j].x = self.drains[j].x \
-                                + sign * self.drains[j].width * 0.5 \
-                                + sign * other.drains[j].width * 0.5
+        self_drains = sorted(self.drains,
+                             key=lambda d: d.offset)
+        other_drains = sorted(other.drains,
+                              key=lambda d: d.offset)
+        for j in range(len(self_drains)):
+            other_drains[j].x = self_drains[j].x \
+                                + sign * self_drains[j].width * 0.5 \
+                                + sign * other_drains[j].width * 0.5
         other.rendered = True
 
     def get_source(self):
@@ -45,7 +49,7 @@ class Course():
 
     def get_length(self):
         if len(filter(lambda d: d.artificial is False,
-               self.drains)) > 2:
+               self.drains)) >= 2:
             return self.get_sink().offset - self.get_source().offset
         else:
             return 0
@@ -55,8 +59,8 @@ class Course():
         drain.course = self
 
     def __repr__(self):
-        return "(C %s drains=%s)" % (self.label,
-                                     len(self.drains))
+        return "(%s len=%s)" % (self.label,
+                                self.get_length())
 
     def get_width_at_offset(self, offset):
         if offset < self.get_source().offset \
@@ -70,7 +74,8 @@ class Course():
             upstream = sorted(filter(lambda d: d.offset < offset
                                      and d.artificial is False,
                                      self.drains),
-                              key=lambda d: d.offset)[-1]
+                              key=lambda d: d.offset,
+                              reverse=True)[0]
             downstream = sorted(filter(lambda d: d.offset > offset
                                        and d.artificial is False,
                                        self.drains),
@@ -78,7 +83,8 @@ class Course():
             width_differential = downstream.width - upstream.width
             local_offset = offset - upstream.offset
             distance = downstream.offset - upstream.offset
-            norm_offset = local_offset / distance
+            norm_offset = float(local_offset) / distance
+            print width_differential, norm_offset, width_differential * norm_offset
             return (width_differential * norm_offset) + upstream.width
 
     def svg_paths(self, dwg):
@@ -267,16 +273,13 @@ class River():
             else:
                 side = 'right'
                 inner = self.get_rightmost_course()
-            print "%s flanking %s with %s" % (side, inner, outer)
             inner.flank_with(outer, side)
             n += 1
 
 
-
 def random_color():
-    return random.choice(['red', 'green', 'blue', 'orange', 'aliceblue',
-                          'aqua', 'aquamarine', 'azure', 'bisque',
-                          'blanchedalmond', 'blueviolet', 'brown',
+    return random.choice(['red', 'green', 'blue', 'orange',
+                          'aquamarine', 'blueviolet', 'brown',
                           'burlywood', 'cadetblue', 'chartreuse',
                           'chocolate', 'coral', 'cornflowerblue',
                           'crimson', 'darkblue', 'darkcyan',
@@ -287,7 +290,7 @@ def random_color():
                           'darkseagreen', 'darkslateblue',
                           'darkslategray', 'darkslategrey',
                           'darkturquoise', 'darkviolet', 'deeppink',
-                          'deepskyblue', 'dimgray', 'dimgrey',
-                          'dodgerblue', 'firebrick', 'forestgreen',
-                          'gainsboro', 'gold', 'goldenrod', 'hotpink',
-                          'indianred', 'indigo', 'khaki', 'lavender'])
+                          'deepskyblue', 'dodgerblue', 'firebrick',
+                          'forestgreen', 'gainsboro', 'gold',
+                          'goldenrod', 'hotpink', 'indianred',
+                          'indigo', 'khaki', 'lavender'])
