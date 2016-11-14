@@ -84,7 +84,6 @@ class Course():
             local_offset = offset - upstream.offset
             distance = downstream.offset - upstream.offset
             norm_offset = float(local_offset) / distance
-            print width_differential, norm_offset, width_differential * norm_offset
             return (width_differential * norm_offset) + upstream.width
 
     def svg_paths(self, dwg):
@@ -149,13 +148,12 @@ class Course():
                 p.push("L %d %d" % (x1, y1))
 
                 dwg.add(p)
-            else:
-                print "achisachis"
 
     def center_at(self, x):
         for d in self.drains:
             d.x = x
         self.rendered = True
+
 
 class Drain():
     x = 0
