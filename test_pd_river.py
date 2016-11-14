@@ -10,8 +10,9 @@ r = River('aguas.svg', timeline_df)
 for c in r.courses:
     print c, c.get_length(), sorted(c.drains, key=lambda x: x.offset)
 
-
+print "longest", r.get_longest_course()
 print "rendering"
+
 r.to_svg()
 r.dwg.save()
 
