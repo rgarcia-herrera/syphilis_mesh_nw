@@ -2,16 +2,14 @@ from timeline import Year
 from timeline import Citation
 import distance
 from itertools import combinations
-from pattern.vector import Document
 from Bio import Medline
-import time, datetime
+from math import log
 from pprint import pprint
-import json
 import csv
 
 records = Medline.parse(open('syphilis_pubmed.medline'))
-#records = Medline.parse(open('try.medline'))
-#terms = {n: {'freq': {}, 'publications': 0} for n in range(1817, 2017)}
+# records = Medline.parse(open('fixture.medline'))
+
 terms = {n: Year(n) for n in range(1817, 2017)}
 all_kw = set()
 
@@ -32,18 +30,23 @@ for year in terms:
     normalized_terms[year] = terms[year].get_normalized_kw_fq()
 
 
-# TODO: writing years as rows allows for nice pandas usage
 # write csv file of keywords and their usage
 with open('syphilis_all_kw.csv', 'w') as csvfile:
     w = csv.writer(csvfile)
-    w.writerow(['kw',] + range(1817, 2017))
-    for kw in sorted(all_kw):
-        row = [kw, ]
-        for year in range(1817, 2017):
-            row.append(normalized_terms[year].get(kw, 0) * len(terms[year].refs.keys()))
-        if len(row) - row.count(0) > 30: # at least appear 29 times
-            w.writerow(row)
-        
+    w.writerow(['year', ] + sorted(all_kw))
+    for year in range(1817, 2017):
+        row = [year, ]
+        for kw in sorted(all_kw):
+            width = normalized_terms[year].get(kw, 0) \
+                    * len(terms[year].refs.keys()) \
+                    + 3
+
+            if width > 3:
+                row.append("%.2f" % log(width))
+            else:
+                row.append(0)
+        w.writerow(row)
+
 
 # top_terms = {n: {'kw': [], 'publications': 0} for n in range(1817, 2017)}
 # for year in terms:
@@ -59,8 +62,8 @@ with open('syphilis_all_kw.csv', 'w') as csvfile:
 #     top_terms[year]['kw'] = {kw[1]:kw[0] for kw in kwords}
 
 
-exit(0)
-                       
+#exit()
+
 # compute distances among all pairs of keywords
 sdist = {}
 for pair in combinations(all_kw, 2):
