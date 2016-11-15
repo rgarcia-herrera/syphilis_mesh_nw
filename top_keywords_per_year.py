@@ -19,8 +19,8 @@ all_kw = set()
 
 for r in records:
     # discard 0.9
-    if random.random() > 0.1:
-        continue
+    #if random.random() > 0.1:
+    #    continue
     
     c = Citation(r)
     kw = c.get_meshterms()
@@ -36,7 +36,7 @@ all_kw = sorted(list(all_kw))
 data = []
 for year in range(1817,2017):
     nt = terms[year].get_normalized_kw_fq()
-    row = [np.log((nt.get(t,0) * len(terms[year].refs))+1)*50 for t in all_kw]
+    row = [np.log((nt.get(t,0) * len(terms[year].refs))+1)*10 for t in all_kw]
     data.append(row)
 
 index = pd.date_range(start="1817", end="2016", freq='365D')
@@ -44,7 +44,7 @@ df = pd.DataFrame(data, index=index, columns=all_kw)
 
 
 top = df.astype(bool).sum(axis=0).sort_values(ascending=False)
-top40 = [kw for kw in top.index[:40]]
+top40 = [kw for kw in top.index[:100]]
 
 df[top40].to_csv('sampled_top40.csv', sep=',', encoding='utf-8', index_label='year')
 
