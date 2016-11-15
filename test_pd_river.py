@@ -7,10 +7,11 @@ timeline_df = pd.read_csv('sampled_top40.csv',
 
 r = River('sampled_top40.svg', timeline_df)
 
-for c in r.courses:
-    print c, c.get_length(), sorted(c.drains, key=lambda x: x.offset)
+# for c in r.courses:
+#     print c, c.get_length(), sorted(c.drains, key=lambda x: x.offset)
 
-print "longest", r.get_longest_course()
+# print "longest", r.get_longest_course()
+
 print "rendering"
 
 r.to_svg()
