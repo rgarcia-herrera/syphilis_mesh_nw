@@ -36,66 +36,11 @@ language processor.
 Grouping these keywords per year creates a data structure that can be
 plotted in a timeline like the one shown above.
 
-This is pseudocode for the data structure:
-
-1817
-
-pmid123:
-syph:0.5,
-mercury:0.25
-morals:0.25
-
-pmid432:
-syph:0.2
-mercury:0.1
-methods:07
-
-...
-
-1817
-syph: [0.5, 0.2]
-mercury: [0.25, 0.1]
-morals: [0.25]
-methos: [0.7]
-
-(+ 0.5 0.2 0.25 0.1 0.25 0.7)
-2.0
-
-
-
-Scale, sum:
-
-(/ 0.5 2)
-0.25
-(/ 0.2 2)
-0.1
-(/ 0.25 2)
-0.125
-(/ 0.1 2)
-0.05
-(/ 0.25 2)
-0.125
-(/ 0.7 2)
-0.35
-
-
-syph: [0.25, 0.1]
-mercury: [0.125, 0.05]
-morals: [0.125]
-methods: [0.35]
-
-sum
-syph: (+ 0.25 0.1) 0.35
-mercury: (+ 0.125 0.05) 0.175
-morals: (+ 0.125) 0.125
-methods: (+ 0.35) 0.35
-
-
-
 ## RiverPlot library
 
-Checkout the API in [try_sql_river.py](try_sql_river.py). It's mostly
+Checkout the API in [pd_river.py](pd_river.py). It's mostly
 done, but there's room for improvement: labels, styles.
 
-<img src="river.png">
+This is an actual plot of the top 100 terms around the syphilis search.
+<img src="top100.png">
 
