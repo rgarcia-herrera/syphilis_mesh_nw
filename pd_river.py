@@ -187,16 +187,18 @@ class River():
                 if w > 0:
                     d = Drain(offset=y, width=w)
                     c.add_drain(d)
-                y += 30
+                y += self.gap
             self.courses.append(c)
 
-    def __init__(self, path, dataframe):
+    def __init__(self, path, dataframe, gap=30):
         self.courses = []
+        self.gap = gap
         self.load_courses_from_df(dataframe)
-        self.match_drains() 
+        self.match_drains()
         self.get_longest_course().center_at(self.get_max_width() * 0.5 + 30)
         self.centralize_current()
         self.dwg = svgwrite.Drawing(filename=path)
+
 
     def match_drains(self):
         """ create artificial drains on courses

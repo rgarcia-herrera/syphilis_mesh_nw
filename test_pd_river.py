@@ -11,7 +11,10 @@ parser.add_argument('--output',
                     type=argparse.FileType('w'),
                     required=True,
                     help="path to output svg")
-
+parser.add_argument('--gap',
+                    type=int,
+                    default=30,
+                    help='space between drains')
 args = parser.parse_args()
 
 timeline_df = pd.read_csv(args.csv,
@@ -19,7 +22,7 @@ timeline_df = pd.read_csv(args.csv,
 
 out_path = args.output.name
 args.output.close()
-r = River(out_path, timeline_df)
+r = River(out_path, timeline_df, args.gap)
 
 print "rendering"
 
