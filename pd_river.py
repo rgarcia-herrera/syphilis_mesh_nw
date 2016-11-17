@@ -201,7 +201,9 @@ class River():
         self.dwg.add(self.grid)
 
     def draw_line(self, y):
-        pass
+        self.grid.add(self.dwg.line(start=(5, y),
+                                    end=(self.max_width * 1.25 + 30, y),
+                                    stroke='lightgrey'))
 
     def draw_label(self, label, y):
         self.grid.add(self.dwg.text(label,
