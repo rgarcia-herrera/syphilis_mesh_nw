@@ -22,7 +22,8 @@ timeline_df = pd.read_csv(args.csv,
 
 out_path = args.output.name
 args.output.close()
-r = River(out_path, timeline_df, args.gap)
+r = River(out_path, timeline_df,
+          gap=args.gap, grid_labels=[t.year for t in timeline_df.index])
 
 print "rendering"
 

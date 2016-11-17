@@ -190,14 +190,38 @@ class River():
                 y += self.gap
             self.courses.append(c)
 
-    def __init__(self, path, dataframe, gap=30):
+    def draw_grid(self, labels,
+                  style="font-size:8;font-family: FreeSans;"):
+        self.grid = self.dwg.g(style=style)
+        y = 10
+        for l in labels:
+            self.draw_line(y)
+            self.draw_label(l, y)
+            y += self.gap
+        self.dwg.add(self.grid)
+
+    def draw_line(self, y):
+        pass
+
+    def draw_label(self, label, y):
+        self.grid.add(self.dwg.text(label,
+                                    insert=(5, y)))
+
+    def __init__(self, path, dataframe, gap=30, grid_labels=[]):
         self.courses = []
         self.gap = gap
+
         self.load_courses_from_df(dataframe)
-        self.match_drains()
-        self.get_longest_course().center_at(self.get_max_width() * 0.5 + 30)
-        self.centralize_current()
+        self.max_width = self.get_max_width()
+
         self.dwg = svgwrite.Drawing(filename=path)
+        if grid_labels:
+            self.draw_grid(grid_labels)
+
+        self.match_drains()
+        self.get_longest_course().center_at(self.max_width * 0.75 + 30)
+        self.centralize_current()
+
 
 
     def match_drains(self):
