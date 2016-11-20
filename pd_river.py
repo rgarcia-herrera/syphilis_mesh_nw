@@ -3,7 +3,6 @@ import random
 
 
 class Course():
-    label = ""
 
     def __init__(self, label, fill):
         self.label = label
@@ -86,12 +85,15 @@ class Course():
             norm_offset = float(local_offset) / distance
             return (width_differential * norm_offset) + upstream.width
 
-    def svg_paths(self, dwg):
+    def svg_paths(self, dwg,
+                  style="font-size:8;font-family: FreeSans;"):
+        
         self.paths = []
         control_distance = 0.5
         sorted_drains = sorted(self.drains,
                                key=lambda d: d.offset)
 
+        g = dwg.g()
         for n in range(len(sorted_drains)-1):
             d1 = sorted_drains[n]
             d2 = sorted_drains[n+1]
@@ -102,6 +104,7 @@ class Course():
                and d2.offset > self.get_source().offset \
                and d2.offset <= self.get_sink().offset:
 
+                # compute path and control points
                 x1 = d1.x - (d1.width/2.0)
                 y1 = d1.offset
 
@@ -126,8 +129,10 @@ class Course():
                 c4x = x4
                 c4y = y4 + ((y2-y1)*control_distance)
 
+                # create svg path
                 p = dwg.path(d="M%d,%d Z" % (x1, y1),
                              fill=self.fill,
+                             opacity=0.5,
                              stroke=self.fill,
                              stroke_width=1)
 
@@ -147,8 +152,33 @@ class Course():
                 # line from x4, y4 to x1, y1
                 p.push("L %d %d" % (x1, y1))
 
-                dwg.add(p)
+                g.add(p)
 
+        dwg.add(g)
+        
+
+        label_group = dwg.g()
+        
+        len_sorted_drains = sorted(self.drains,
+                                   key=lambda d: d.width,
+                                   reverse=True)
+
+        for d in len_sorted_drains[:len(sorted_drains)/10]:
+            lx = d.x - d.width * 0.2
+            t = dwg.text(self.label,
+                         insert=(lx, d.offset),
+                         style="font-size:8;font-family: FreeSans;")
+
+            factor = d.width / float((len(self.label) + 1) * 6)
+
+            t.translate(- lx * (factor - 1), -d.offset * (factor - 1))
+            t.scale(factor)
+            # t.rotate(90, center=(lx, ly))
+            label_group.add(t)
+        
+        dwg.add(label_group)        
+
+        
     def center_at(self, x):
         for d in self.drains:
             d.x = x
@@ -175,7 +205,6 @@ class Drain():
                                     self.x,
                                     self.width,
                                     a)
-
 
 class River():
 
