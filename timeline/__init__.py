@@ -116,12 +116,12 @@ class Citation:
         return mesh_terms
 
     
-    def get_keywords(self):
+    def get_keywords(self, group=True):
         """ use pattern.Document to grab keywords from title or abstract """
         # if 'OT' not in self.record and 'MH' not in r:
         d = Document(self.record.get('TI',
                                      self.record.get('AB')))
-        kw = dict()
+        kw = list()
         for w in d.keywords():
             try:
                 # numbers are uninteresting
@@ -129,7 +129,7 @@ class Citation:
                 int(w[1])
             except ValueError:
                 # only keep them if they fail
-                kw[w[1]] = w[0]
+                kw.append(groupterm.get(w[1], w[1]))
 
         return kw
 
