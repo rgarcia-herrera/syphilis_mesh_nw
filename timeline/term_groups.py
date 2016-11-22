@@ -119,6 +119,7 @@ groupterm = {
     "anus diseases" : "DISEASE",
     "labyrinth diseases" : "DISEASE",
     "disease" : "DISEASE",
+    "diseases" : "DISEASE",    
     "disease management" : "DISEASE",
     "disease models, animal" : "DISEASE",
     "disease outbreaks" : "DISEASE",
