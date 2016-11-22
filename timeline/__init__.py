@@ -52,7 +52,7 @@ class Citation:
             conv = time.strptime(medline_record['EDAT'], "%Y/%m/%d")
             self.date = datetime.datetime(*conv[:6])  # entrez date
 
-    def get_meshterms(self):
+    def get_meshterms_fq(self):
         if 'MH' in self.record:
             # grab mesh terms
             mh = Document(self.record['MH'])
@@ -91,6 +91,31 @@ class Citation:
 
         return terms
 
+
+    def get_meshterms(self, flatten=True, group=True):
+        if 'MH' not in self.record and 'OT' not in self.record:
+            return list()
+
+        mh = self.record.get('MH', list()) + self.record.get('OT', list())
+        
+        mesh_terms = list()
+        for term in mh:
+            term = term.replace('*', '')
+            
+            if flatten:
+                words = term.split('/')
+                for w in words:
+                    if group:
+                        w = groupterm.get(w, w)
+                    mesh_terms.append(w)
+            else:
+                if group:
+                    term = groupterm.get(term, term)
+                mesh_terms.append(term)
+                
+        return mesh_terms
+
+    
     def get_keywords(self):
         """ use pattern.Document to grab keywords from title or abstract """
         # if 'OT' not in self.record and 'MH' not in r:
@@ -107,3 +132,17 @@ class Citation:
                 kw[w[1]] = w[0]
 
         return kw
+
+
+
+class Term:
+
+    def __init__(self, term):
+        self.term = term
+        self.mentions_in_year = dict()
+
+    def get_weight(self):
+        return sum(self.mentions_in_year.values())
+
+    def __repr__(self):
+        return "<w=%s %s>" % (self.get_weight(), self.term)
