@@ -24,6 +24,11 @@ parser.add_argument('--thru_year',
                     type=int,
                     required=True,
                     help="end year of timeline")
+parser.add_argument('--mode',
+                    choices=['meshterms', 'keywords', 'both'],
+                    default='both',
+                    help="extract mesh-terms, keywords or both")
+
 parser.add_argument('--top',
                      type=int,
                      default=40,
@@ -43,7 +48,13 @@ all_terms = dict()
 
 for r in records:
     c = Citation(r)
-    local_terms = c.get_meshterms(flatten=True, group=False)
+    if args.mode == 'meshterms':
+        local_terms = c.get_meshterms(flatten=True, group=True)
+    elif args.mode == 'keywords':
+        local_terms = c.get_keywords(group=False)
+    elif args.mode == 'both':
+        local_terms = c.get_keywords() + c.get_meshterms(flatten=True, group=True)
+
     for term in local_terms:
         if term in all_terms:
             if c.date.year in all_terms[term].mentions_in_year:
@@ -60,11 +71,13 @@ for r in records:
         w = G.get_edge_data(n0, n1, default={'w':1})
         G.add_edge(n0, n1, w)
 
+        
 G.remove_node(all_terms['Male'])
 G.remove_node(all_terms['Female'])
 G.remove_node(all_terms['Humans'])
 
-degree_sorted = sorted(G.degree(weight='w').items(), key=operator.itemgetter(1))
+#degree_sorted = sorted(G.degree(weight='w').items(), key=operator.itemgetter(1))
+degree_sorted = sorted(nx.betweenness_centrality(G, weight='w').items(), key=operator.itemgetter(1))
 degree_sorted.reverse()
 
 top = [t[0] for t in degree_sorted[:args.top]]
