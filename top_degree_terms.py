@@ -6,7 +6,6 @@ import itertools
 import operator
 import pandas as pd
 import numpy as np
-#import random
 import json
 import argparse
 
@@ -39,6 +38,11 @@ parser.add_argument('--groups',
                     required=False,
                     help="dictionary that groups similar terms, in json format")
 
+parser.add_argument('--ignore',
+                    type=argparse.FileType('r'),
+                    required=False,
+                    help="file with list of terms to remove from network")
+
 parser.add_argument('--top',
                      type=int,
                      default=40,
@@ -54,7 +58,7 @@ if args.groups:
     group_terms = json.load(args.groups)
 else:
     group_terms = {}
-
+    
 records = Medline.parse(args.medline)
 
 G = nx.Graph()
@@ -90,10 +94,13 @@ for r in records:
         w = G.get_edge_data(n0, n1, default={'w':1})
         G.add_edge(n0, n1, w)
 
-        
-G.remove_node(all_terms['Male'])
-G.remove_node(all_terms['Female'])
-G.remove_node(all_terms['Humans'])
+
+# remove uninteresting terms
+if args.ignore:
+    for t in args.ignore.readlines():
+        term = t.strip()
+        if term in all_terms:
+            G.remove_node(all_terms[term])
 
 degree_sorted = sorted(G.degree(weight='w').items(), key=operator.itemgetter(1))
 #degree_sorted = sorted(nx.betweenness_centrality(G, weight='w').items(), key=operator.itemgetter(1))
