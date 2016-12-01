@@ -1,8 +1,6 @@
 from pattern.vector import Document
 import time
 import datetime
-from term_groups import uninteresting_terms
-
 
 class Year:
 
