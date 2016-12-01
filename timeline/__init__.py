@@ -1,7 +1,6 @@
 from pattern.vector import Document
 import time
 import datetime
-from term_groups import groupterm
 from term_groups import uninteresting_terms
 
 
@@ -52,47 +51,8 @@ class Citation:
             conv = time.strptime(medline_record['EDAT'], "%Y/%m/%d")
             self.date = datetime.datetime(*conv[:6])  # entrez date
 
-    def get_meshterms_fq(self):
-        if 'MH' in self.record:
-            # grab mesh terms
-            mh = Document(self.record['MH'])
-        elif 'OT' in self.record:
-            mh = Document(self.record['OT'])
-        else:
-            return {}
 
-        main_terms = list()
-        other_terms = list()
-        for term in mh:
-            words = term.split('/')
-            for w in words:
-                if w not in uninteresting_terms:
-                    if '*' in w:
-                        term = w.replace('*', '')
-                        main_terms.append(groupterm.get(term, term))
-                    else:
-                        other_terms.append(groupterm.get(w, w))
-        total_terms = float(len(main_terms) + len(other_terms))
-        main_terms_fq = dict()
-        for term in main_terms:
-            main_terms_fq[term] = (1 / total_terms) * 2
-        other_terms_fq = dict()
-        for term in other_terms:
-            other_terms_fq[term] = 1 / total_terms
-
-        # importance adjusted frequency total
-        f = sum(main_terms_fq.values()) + sum(other_terms_fq.values())
-
-        terms = {term: 0 for term in main_terms + other_terms}
-        for term in main_terms:
-            terms[term] += main_terms_fq[term] / f
-        for term in other_terms:
-            terms[term] += other_terms_fq[term] / f
-
-        return terms
-
-
-    def get_meshterms(self, flatten=True, group=True):
+    def get_meshterms(self, flatten=True, groups={}):
         if 'MH' not in self.record and 'OT' not in self.record:
             return list()
 
@@ -105,18 +65,18 @@ class Citation:
             if flatten:
                 words = term.split('/')
                 for w in words:
-                    if group:
-                        w = groupterm.get(w, w)
+                    if groups:
+                        w = groups.get(w, w)
                     mesh_terms.append(w)
             else:
-                if group:
-                    term = groupterm.get(term, term)
+                if groups:
+                    term = groups.get(term, term)
                 mesh_terms.append(term)
                 
         return mesh_terms
 
     
-    def get_keywords(self, group=True):
+    def get_keywords(self, groups={}):
         """ use pattern.Document to grab keywords from title or abstract """
         # if 'OT' not in self.record and 'MH' not in r:
         d = Document(self.record.get('TI',
@@ -129,7 +89,10 @@ class Citation:
                 int(w[1])
             except ValueError:
                 # only keep them if they fail
-                kw.append(groupterm.get(w[1], w[1]))
+                if groups:
+                    kw.append(groups.get(w[1], w[1]))
+                else:
+                    kw.append(w[1]) 
 
         return kw
 

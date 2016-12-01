@@ -7,6 +7,7 @@ import operator
 import pandas as pd
 import numpy as np
 #import random
+import json
 import argparse
 
 from pprint import pprint
@@ -25,9 +26,18 @@ parser.add_argument('--thru_year',
                     required=True,
                     help="end year of timeline")
 parser.add_argument('--mode',
-                    choices=['meshterms', 'keywords', 'both'],
+                    choices=['flatmesh',
+                             'meshterms',
+                             'keywords',
+                             'kw+mh',
+                             'kw+flatmh'],
                     default='both',
                     help="extract mesh-terms, keywords or both")
+
+parser.add_argument('--groups',
+                    type=argparse.FileType('r'),
+                    required=False,
+                    help="dictionary that groups similar terms, in json format")
 
 parser.add_argument('--top',
                      type=int,
@@ -40,6 +50,10 @@ parser.add_argument('--output',
 
 args = parser.parse_args()
 
+if args.groups:
+    group_terms = json.load(args.groups)
+else:
+    group_terms = {}
 
 records = Medline.parse(args.medline)
 
@@ -49,12 +63,17 @@ all_terms = dict()
 for r in records:
     c = Citation(r)
     if args.mode == 'meshterms':
-        local_terms = c.get_meshterms(flatten=True, group=True)
+        local_terms = c.get_meshterms(flatten=False, groups=group_terms)
+    elif args.mode == 'flatmesh':
+        local_terms = c.get_meshterms(flatten=True, groups=group_terms)        
     elif args.mode == 'keywords':
-        local_terms = c.get_keywords(group=False)
-    elif args.mode == 'both':
-        local_terms = c.get_keywords() + c.get_meshterms(flatten=True, group=True)
+        local_terms = c.get_keywords(groups=group_terms)
+    elif args.mode == 'kw+mh':
+        local_terms = c.get_keywords(groups=group_terms) + c.get_meshterms(flatten=False, groups=group_terms)
+    elif args.mode == 'kw+flatmh':
+        local_terms = c.get_keywords(groups=group_terms) + c.get_meshterms(flatten=True, groups=group_terms)
 
+        
     for term in local_terms:
         if term in all_terms:
             if c.date.year in all_terms[term].mentions_in_year:
@@ -76,8 +95,8 @@ G.remove_node(all_terms['Male'])
 G.remove_node(all_terms['Female'])
 G.remove_node(all_terms['Humans'])
 
-#degree_sorted = sorted(G.degree(weight='w').items(), key=operator.itemgetter(1))
-degree_sorted = sorted(nx.betweenness_centrality(G, weight='w').items(), key=operator.itemgetter(1))
+degree_sorted = sorted(G.degree(weight='w').items(), key=operator.itemgetter(1))
+#degree_sorted = sorted(nx.betweenness_centrality(G, weight='w').items(), key=operator.itemgetter(1))
 degree_sorted.reverse()
 
 top = [t[0] for t in degree_sorted[:args.top]]
