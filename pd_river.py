@@ -209,15 +209,21 @@ class Drain():
 class River():
 
     def load_courses_from_df(self, df):
-        for i, row in df.iteritems():
+        for label, row in df.iteritems():
             y = 10
-            c = Course(label=i, fill=random_color())
-            for w in df[i].values:
+            
+            if label in self.layout:
+                fill = layout[label]['fill']
+            else:
+                fill = random_color()
+                
+            c = Course(label=label, fill=fill)
+            for w in df[label].values:
                 if w > 0:
                     d = Drain(offset=y, width=w)
                     c.add_drain(d)
                 y += self.gap
-            self.courses.append(c)
+            self.courses[label] = c
 
     def draw_grid(self, labels,
                   style="font-size:8;font-family: FreeSans;"):
@@ -238,8 +244,9 @@ class River():
         self.grid.add(self.dwg.text(label,
                                     insert=(5, y)))
 
-    def __init__(self, path, dataframe, gap=30, grid_labels=[]):
-        self.courses = []
+    def __init__(self, path, dataframe, gap=30, grid_labels=[], layout={}):
+        self.courses = {}
+        self.layout = layout
         self.gap = gap
 
         self.load_courses_from_df(dataframe)
@@ -249,9 +256,12 @@ class River():
         if grid_labels:
             self.draw_grid(grid_labels)
 
-        self.match_drains()
-        self.get_longest_course().center_at(self.max_width * 0.75 + 30)
-        self.centralize_current()
+        if self.layout:
+            pass
+        else:
+            self.match_drains()
+            self.get_longest_course().center_at(self.max_width * 0.75 + 30)
+            self.centralize_current()
 
 
 
@@ -261,29 +271,29 @@ class River():
         that they may be aligned """
 
         natural_drains = []
-        for c in self.courses:
+        for c in self.courses.values():
             natural_drains += filter(lambda d: d.artificial is False, c.drains)
 
         # add artificial drains where needed
         for d in natural_drains:
-            for c in self.courses:
+            for c in self.courses.values():
                 if d.course is not c and not c.drain_at_ofset(d.offset):
                     c.add_drain(Drain(offset=d.offset,
                                       width=c.get_width_at_offset(d.offset),
                                       artificial=True))
 
     def to_svg(self):
-        for c in self.courses:
+        for c in self.courses.values():
             c.svg_paths(self.dwg)
 
     def center_align_all_courses(self, margin=100):
         center = margin + self.get_max_width() * 0.5
-        for c in self.courses:
+        for c in self.courses.values():
             c.center_at(center)
 
     def get_all_drains(self):
         drains = list()
-        for c in self.courses:
+        for c in self.courses.values():
             for d in c.drains:
                 drains.append(d)
         return drains
@@ -310,7 +320,7 @@ class River():
         return sorted(widths.values())[-1]
 
     def get_longest_course(self):
-        return sorted(self.courses,
+        return sorted(self.courses.values(),
                       key=lambda c: c.get_length())[-1]
 
     def centralize_current(self):
@@ -319,7 +329,7 @@ class River():
 
         # longest course is set at the center at init
         for outer in sorted(filter(lambda c: c.rendered is False,
-                                   self.courses),
+                                   self.courses.values()),
                             key=lambda c: c.get_length(),
                             reverse=True):
             if n % 2:
