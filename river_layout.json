@@ -1,0 +1,5 @@
+{'syphilis': { 'fill': 'red',
+	       'center': 300},
+ 'treatment': { 'fill': 'blue',
+		'rightof': 'syphilis'}
+}
