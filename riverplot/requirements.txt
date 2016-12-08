@@ -1,5 +1,4 @@
-pattern
 svgwrite
+pandas
 networkx
-biopython
 pytest
