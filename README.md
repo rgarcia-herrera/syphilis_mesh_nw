@@ -1,7 +1,6 @@
 # Syphilis Keyword Genesis and Development
 
-So I read this fragment on Fleck's [Genesis and Development of a
-Scientific Fact](http://www.evolocus.com/Textbooks/Fleck1979.pdf):
+From Fleck's [Genesis and Development of a Scientific Fact](http://www.evolocus.com/Textbooks/Fleck1979.pdf):
 
     It's as if we wanted to record in writing the natural course of an
     excited conversation among several persons all speaking
@@ -15,11 +14,12 @@ Scientific Fact](http://www.evolocus.com/Textbooks/Fleck1979.pdf):
     description of dynamic interactions, one is left with a more or
     less artificial scheme.
 
-I immediately thought of this timeline:
 
-<img src="http://imgs.xkcd.com/comics/congress.png" height="500px">
+Plotting the "natural course" of such a conversation might be useful
+for visual analysis.  The "artificial scheme" can be plotted as a
+timeline of term frequencies.
 
-[source](https://xkcd.com/1127/)
+
 
 ## PubMed Mining
 
@@ -33,14 +33,8 @@ from the title or abstract using
 [Pattern](http://www.clips.ua.ac.be/pages/pattern-vector), a natural
 language processor.
 
-Grouping these keywords per year creates a data structure that can be
-plotted in a timeline like the one shown above.
 
-## RiverPlot library
+## RiverPlot
 
-Checkout the API in [pd_river.py](pd_river.py). It's mostly
-done, but there's room for improvement: labels, styles.
 
-This is an actual plot of top terms around the syphilis search.
 <img src="example.png">
-
