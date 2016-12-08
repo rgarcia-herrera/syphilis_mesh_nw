@@ -1,4 +1,0 @@
-svgwrite
-pandas
-networkx
-pytest
