@@ -1,0 +1,3 @@
+[submodule "riverplot"]
+	path = riverplot
+	url = git@github.com:rgarcia-herrera/riverplot.git
