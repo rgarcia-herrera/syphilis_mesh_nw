@@ -1,3 +1,6 @@
 [submodule "riverplot"]
 	path = riverplot
 	url = git@github.com:rgarcia-herrera/riverplot.git
+[submodule "pubmed_timeline"]
+	path = pubmed_timeline
+	url = git@github.com:rgarcia-herrera/pubmed_timeline.git
