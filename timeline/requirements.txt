@@ -1,4 +1,0 @@
-pattern
-networkx
-biopython
-pytest
