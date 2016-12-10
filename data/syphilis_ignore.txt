@@ -2,5 +2,4 @@ Humans
 Human
 Male
 Female
-RESEARCH
 Adult
