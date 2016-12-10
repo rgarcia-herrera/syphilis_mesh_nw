@@ -27,5 +27,5 @@ for y in range(1817, 2017):
                                mode=mode,
                                top=20,
                                pickle="%s.pickle" % run_id,
-                               svg="%s.svg" % run_id,
+                               svg="plots/%s.svg" % run_id,
                                run_id=run_id)
