@@ -10,23 +10,23 @@ parser.add_argument('--pickle',
                     type=argparse.FileType('r'),
                     required=True,
                     help="path to pickled nx graph")
-parser.add_argument('--out',
-                   type=argparse.FileType('w'),
-                   required=True,
-                   help="path to output histogram")
+parser.add_argument('--terms',
+                    type=argparse.FileType('r'),
+                    required=True,
+                    help="list of terms for bar chart")
+parser.add_argument('--output',
+                    type=argparse.FileType('w'),
+                    required=True,
+                    help="path to output PNG")
 
 args = parser.parse_args()
 
 g = pickle.load(args.pickle)
 
-ag = ['Infant',
-      'Infant, Newborn',
-      'Child',
-      'Adolescent',
-      'Young Adult',
-      'Adult',
-      'Middle Aged',
-      'Aged',]
+ag = []
+for t in args.terms.readlines():
+        term = t.strip()
+        ag.append(term)
 
 count = {term:0 for term in ag}
 
@@ -40,5 +40,4 @@ plt.barh(np.arange(len(ag)),
 plt.yticks(np.arange(len(ag)), ag)
 plt.tight_layout(pad=2)
 plt.xlabel('Menciones')
-plt.title('Conteo de menciones de terminos en Age Groups')
-plt.savefig(args.out)
+plt.savefig(args.output)
