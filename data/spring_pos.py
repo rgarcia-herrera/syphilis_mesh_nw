@@ -19,6 +19,6 @@ parser.add_argument('--pos',
 args = parser.parse_args()
 
 g = pickle.load(args.pickle)
-pos = nx.spring_layout(g)
+pos = nx.layout.fruchterman_reingold_layout(g)
 
 pickle.dump(pos, args.pos)
