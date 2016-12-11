@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description='Prune a pickled graph removing anything w=1')
-parser.add_argument('--in',
+parser.add_argument('--pickle',
                     type=argparse.FileType('r'),
                     required=True,
                     help="path to pickled nx graph")
@@ -27,4 +27,4 @@ for n in g.nodes():
     if g.node[n]['w'] == 1 or len(g.neighbors(n)) < 1:
         g.remove_node(n)
 
-pickle.dump(g, args.pos)
+pickle.dump(g, args.out)
