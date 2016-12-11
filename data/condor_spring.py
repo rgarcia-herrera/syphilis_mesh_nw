@@ -1,8 +1,11 @@
-large_nets = ['pickles/syph_2016_flatmesh_pruned.pickle',
-              'pickles/syph_2016_keywords_pruned.pickle',
-              'pickles/syph_2016_kw+flatmh_pruned.pickle',
-              'pickles/syph_2016_kw+mh_pruned.pickle',
-              'pickles/syph_2016_meshterms_pruned.pickle']
+large_nets = [
+    'pickles/syph_1950_flatmesh_pruned.pickle',
+    'pickles/syph_2016_flatmesh_pruned.pickle',
+    'pickles/syph_2016_keywords_pruned.pickle',
+    'pickles/syph_2016_kw+flatmh_pruned.pickle',
+    'pickles/syph_2016_kw+mh_pruned.pickle',
+    'pickles/syph_2016_meshterms_pruned.pickle',
+]
               
 print "executable = syph_env.sh"
 
