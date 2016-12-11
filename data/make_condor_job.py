@@ -22,10 +22,10 @@ for y in range(1817, 2017):
                  'kw+mh',
                  'kw+flatmh']:        
         run_id = "syph_%s_%s" % (y, mode)
-        print plantilla.format(start_year=y,
-                               thru_year=y+1,
+        print plantilla.format(start_year=1817,
+                               thru_year=y,
                                mode=mode,
                                top=20,
-                               pickle="%s.pickle" % run_id,
+                               pickle="pickles/%s.pickle" % run_id,
                                svg="plots/%s.svg" % run_id,
                                run_id=run_id)
