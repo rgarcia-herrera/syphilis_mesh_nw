@@ -31,8 +31,8 @@ for t in args.terms.readlines():
 count = {term:0 for term in ag}
 
 for n in g.nodes():
-    if n.term in ag:
-        count[n.term] = n.get_weight()
+    if n in ag:
+        count[n] = g.node[n]['w']
 
 plt.barh(np.arange(len(ag)),
          [count[t] for t in ag],         
