@@ -1,2 +1,4 @@
 *.pickle
 *.csv
+*~
+condor_log
