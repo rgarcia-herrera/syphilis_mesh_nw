@@ -1,19 +1,22 @@
+print "executable = syph_env.sh"
 
 plantilla = """
-executable = year_graph.sh
+arguments = pubmed_graph_for_year.py \
+ 	     --start_year {start_year} \
+ 	     --thru_year {thru_year} \
+ 	     --mode {mode} \
+ 	     --top {top} \
+ 	     --ignore syphilis_ignore.txt \
+ 	     --groups syphilis_groups.json \
+ 	     --pickle {pickle} \
+ 	     --medline syphilis_pubmed.medline
 
-arguments = {start_year} \
-            {thru_year} \
-            {mode} \
-            {top} \
-            {pickle} \
-            {svg}
-
-log        = {run_id}.log                                                    
-output       = {run_id}.out
-error        = {run_id}.err
+log          = condor_log/{run_id}.log                                                    
+output       = condor_log/{run_id}.out
+error        = condor_log/{run_id}.err
 queue
 """
+
 
 for y in range(1817, 2017):
     for mode in ['flatmesh',
@@ -25,7 +28,6 @@ for y in range(1817, 2017):
         print plantilla.format(start_year=1817,
                                thru_year=y,
                                mode=mode,
-                               top=20,
+                               top=0,
                                pickle="pickles/%s.pickle" % run_id,
-                               svg="plots/%s.svg" % run_id,
                                run_id=run_id)
