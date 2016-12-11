@@ -1,5 +1,4 @@
 Infant
-Infant Newborn
 Child
 Adolescent
 Young Adult
