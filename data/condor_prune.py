@@ -5,6 +5,7 @@ print "executable = syph_env.sh"
 plantilla = """
 arguments = ./prune_graph.py \
              --pickle {pickle} \
+             --edgeth 20 \
              --out {out}
 
 log          = condor_log/{run_id}.log                                                    
