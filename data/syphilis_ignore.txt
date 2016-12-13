@@ -1,5 +1,6 @@
-Humans
-Human
-Male
-Female
-Adult
+age groups
+syphilis
+humans
+human
+male
+female
